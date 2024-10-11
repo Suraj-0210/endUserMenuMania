@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.get("/dish/test", test);
 
-router.get("/dish/:restaurantid", getDishes);
+router.get("/:restaurantid", getDishes);
 
 export default router;

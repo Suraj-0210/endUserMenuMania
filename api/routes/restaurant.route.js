@@ -6,8 +6,8 @@ import {
 
 const router = express.Router();
 
-router.get("/restaurant/test", testRestaurant);
+router.get("/test", testRestaurant);
 
-router.get("/restaurant/:restaurantid", getRestaurant);
+router.get("/:restaurantid", getRestaurant);
 
 export default router;
