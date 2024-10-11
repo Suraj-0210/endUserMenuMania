@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
 import Header from "./components/Header";
-import {
-  BrowserRouter,
-  Route,
-  Routes,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Cart from "./components/Cart";
-import Orders from "./pages/Orders";
 
 const App = () => {
   const [restaurantId, setRestaurantId] = useState(null);
@@ -18,8 +11,34 @@ const App = () => {
   const [order, setOrder] = useState([]);
   const [confirmedOrders, setConfirmedOrders] = useState([]);
   const [showOrders, setShowOrders] = useState(false);
+  const [paidOrders, setPaidOrders] = useState([]);
 
   const location = useLocation();
+
+  useEffect(() => {
+    async function fetchPaidOrders() {
+      const sessionId = "abc123xyz";
+      try {
+        const resPaidOrders = await fetch(
+          `http://localhost:3001/api/orders/${sessionId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (resPaidOrders.ok) {
+          const result = await resPaidOrders.json();
+          setPaidOrders(result);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchPaidOrders();
+  }, []);
 
   useEffect(() => {
     // Extract restaurantId and table from the URL
@@ -56,18 +75,73 @@ const App = () => {
     setOrder(updatedOrder);
   };
 
+  const handleCreateOrder = async (paymentId, confirmedOrders) => {
+    try {
+      const sessionId = "abc123xyz"; // Replace with actual session ID logic
+
+      // Prepare dishes data for the API request
+      const dishes = confirmedOrders.map((order) => ({
+        menuItem: order.dishid, // Use dish ID from confirmed orders
+        quantity: order.quantity,
+      }));
+
+      const response = await fetch("http://localhost:3001/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dishes,
+          sessionId,
+          paymentId,
+          status: "Completed",
+        }),
+      });
+
+      const resPaidOrders = await fetch(
+        `http://localhost:3001/api/orders/${sessionId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (resPaidOrders.ok) {
+        const result = await resPaidOrders.json();
+        setPaidOrders(result);
+      }
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Order created successfully:", result);
+        setConfirmedOrders([]);
+      } else {
+        throw new Error("Failed to place order.");
+      }
+    } catch (error) {
+      console.error("Failed to create order:", error);
+    }
+  };
+
   const handlePaymentSuccess = (paymentId) => {
-    // Assuming you have a function to handle payment success
     // Add confirmed orders to the confirmedOrders state
-    setConfirmedOrders((prev) => [
-      ...prev,
-      ...order.map((item) => ({ ...item, paymentId })), // Add payment ID if needed
-    ]);
+    const newConfirmedOrders = order.map((item) => ({
+      ...item,
+      status: "Confirmed",
+    })); // Add status directly
+    setConfirmedOrders((prev) => [...prev, ...newConfirmedOrders]); // Update confirmed orders
     setOrder([]); // Clear the current order after confirmation
-    toggleShowOrders();
+    toggleShowOrders(); // Show orders after placing them
+
+    // Call create order with the new confirmed orders
+    handleCreateOrder(paymentId, newConfirmedOrders);
   };
 
   console.log(order);
+  console.log(confirmedOrders);
+  console.log(paidOrders);
 
   return (
     <div>
@@ -101,6 +175,7 @@ const App = () => {
               showOrders={showOrders}
               setShowOrder={setShowOrders}
               confirmedOrders={confirmedOrders}
+              paidOrders={paidOrders}
             />
           }
         />

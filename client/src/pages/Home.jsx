@@ -16,6 +16,7 @@ function HomePage({
   setShowOrders,
   showOrders,
   confirmedOrders,
+  paidOrders,
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const categories = ["Breakfast", "Lunch", "Dinner", "Biriyani"];
@@ -81,6 +82,7 @@ function HomePage({
       const updatedOrder = [
         ...order,
         {
+          dishid: dish._id,
           dishname: dish.name,
           image: dish.image,
           price: dish.price,
@@ -98,7 +100,7 @@ function HomePage({
   return (
     <>
       {showOrders ? (
-        <Orders confirmedOrders={confirmedOrders} />
+        <Orders confirmedOrders={confirmedOrders} paidOrders={paidOrders} />
       ) : (
         <div>
           {/* Banner Section */}

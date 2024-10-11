@@ -9,15 +9,8 @@ export const getDishes = async (req, res) => {
     const resArr = [];
 
     for (let i = 0; i < menu.length; i++) {
-      let {
-        _id,
-        restaurantid,
-        createdAt,
-        updatedAt,
-        __v,
-        description,
-        ...rest
-      } = menu[i]._doc;
+      let { restaurantid, createdAt, updatedAt, __v, description, ...rest } =
+        menu[i]._doc;
       resArr.push({ ...rest, text: description });
     }
 

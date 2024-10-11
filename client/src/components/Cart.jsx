@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button, Modal } from "flowbite-react";
 import { FiTrash2 } from "react-icons/fi";
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai"; // Import icons for plus and minus
-import Razorpay from "razorpay";
 
 const Cart = ({
   toggleShowCart,

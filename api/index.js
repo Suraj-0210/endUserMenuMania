@@ -6,6 +6,7 @@ import Razorpay from "razorpay";
 import bodyParser from "body-parser";
 import dishRoute from "./routes/dish.route.js";
 import restaurantRoute from "./routes/restaurant.route.js";
+import ordersRoute from "./routes/order.route.js";
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use(express.json());
 // Define routes after CORS setup
 app.use("/api/dish", dishRoute);
 app.use("/api/restaurant", restaurantRoute);
+app.use("/api", ordersRoute);
 
 app.post("/create-order", async (req, res) => {
   const options = {
