@@ -6,7 +6,8 @@ const router = express.Router();
 // Place an Order
 router.post("/orders", async (req, res) => {
   try {
-    const { dishes, sessionId, paymentId, status } = req.body;
+    const { dishes, tableNo, restaurantId, sessionId, paymentId, status } =
+      req.body;
 
     // Create a new order
     const newOrder = new Order({
@@ -14,6 +15,8 @@ router.post("/orders", async (req, res) => {
         menuItem: dish.menuItem, // This should be the ObjectId of the Menu item
         quantity: dish.quantity,
       })),
+      restaurantId,
+      tableNo,
       sessionId,
       paymentId,
       status,
@@ -31,7 +34,7 @@ router.post("/orders", async (req, res) => {
 
 // orderRoutes.js
 
-/// Get All Orders for Restaurant Owner
+/// Get All Orders for Admin
 router.get("/orders", async (req, res) => {
   try {
     const orders = await Order.find().populate("dishes.menuItem"); // Populate menu item details
@@ -41,6 +44,38 @@ router.get("/orders", async (req, res) => {
     }
 
     res.status(200).json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to retrieve orders" });
+  }
+});
+
+// Get All Orders for Restaurant Owners
+router.get("/orders/restaurant/:restaurantId", async (req, res) => {
+  const restaurantId = req.params.restaurantId;
+  try {
+    const orders = await Order.find({
+      restaurantId: restaurantId,
+      status: { $ne: "Delivered" },
+    }).populate("dishes.menuItem"); // Populate menu item details
+
+    if (!orders.length) {
+      return res.status(200).json({ message: "No orders found." });
+    }
+
+    const formattedOrders = orders.map((order) => ({
+      OrderId: order._id,
+      Items: order.dishes.map((dish) => ({
+        Name: dish.menuItem.name,
+        Quantity: dish.quantity,
+      })),
+      TableNo: order.tableNo,
+      SessionId: order.sessionId,
+      PaymentId: order.paymentId,
+      Status: order.status,
+    }));
+
+    res.status(200).json(formattedOrders);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to retrieve orders" });
@@ -63,6 +98,32 @@ router.get("/orders/:sessionid", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to retrieve orders" });
+  }
+});
+
+// Update Order Status by Owners
+router.put("/orders/:orderId/status", async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body; // New status should be sent in the request body
+
+  try {
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedOrder) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+
+    res.status(200).json({
+      message: "Order status updated successfully.",
+      updatedOrder,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to update order status." });
   }
 });
 

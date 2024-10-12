@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from "react";
+import { FaCheckCircle, FaSpinner } from "react-icons/fa"; // Import icons for status
 import jsPDF from "jspdf";
 
 const Orders = ({ paidOrders }) => {
@@ -35,7 +37,7 @@ const Orders = ({ paidOrders }) => {
       </h2>
       {paidOrders.length === 0 ? (
         <div className="text-center text-gray-600 text-lg py-20">
-          <p>No paid orders available at the moment.</p>
+          <p>Add the foods to cart and make the payment.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -80,19 +82,22 @@ const Orders = ({ paidOrders }) => {
                   ))}
                 </div>
 
-                {/* Order Status */}
-                <p className="mt-6 text-gray-700">
-                  Status:{" "}
-                  <span
-                    className={`font-bold ${
-                      order.status === "Completed"
-                        ? "text-green-500"
-                        : "text-red-500"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-                </p>
+                {/* Order Status with Animation */}
+                <div className="flex items-center mt-6">
+                  {order.status === "Delivered" ? (
+                    <>
+                      <span className="text-green-600 text-xl mr-2">🎉</span>
+                      <p className="mt-1 text-gray-700 font-bold">Delivered</p>
+                    </>
+                  ) : (
+                    <>
+                      <FaSpinner className="animate-spin text-yellow-500 mr-2" />
+                      <p className="mt-1 text-gray-700 font-bold">
+                        {order.status}
+                      </p>
+                    </>
+                  )}
+                </div>
 
                 {/* Payment ID */}
                 <p className="text-sm text-gray-400 mt-1">

@@ -14,6 +14,12 @@ const orderSchema = new mongoose.Schema({
       quantity: { type: Number, required: true },
     },
   ],
+  restaurantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+  },
+  tableNo: { type: Number, required: true },
   sessionId: { type: String, required: true }, // For tracking customer sessions
   paymentId: { type: String, required: true }, // Payment ID
   status: {

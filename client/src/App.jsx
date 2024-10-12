@@ -15,28 +15,29 @@ const App = () => {
 
   const location = useLocation();
 
-  useEffect(() => {
-    async function fetchPaidOrders() {
-      const sessionId = "abc123xyz";
-      try {
-        const resPaidOrders = await fetch(
-          `http://localhost:3001/api/orders/${sessionId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (resPaidOrders.ok) {
-          const result = await resPaidOrders.json();
-          setPaidOrders(result);
+  async function fetchPaidOrders() {
+    const sessionId = "abc123yz";
+    try {
+      const resPaidOrders = await fetch(
+        `http://localhost:3001/api/orders/${sessionId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      } catch (error) {
-        console.log(error);
+      );
+
+      if (resPaidOrders.ok) {
+        const result = await resPaidOrders.json();
+        setPaidOrders(result);
       }
+    } catch (error) {
+      console.log(error);
     }
+  }
+
+  useEffect(() => {
     fetchPaidOrders();
   }, []);
 
@@ -62,6 +63,9 @@ const App = () => {
   };
   const toggleShowOrders = () => {
     setShowOrders((prev) => !prev);
+    if (showOrders) {
+      fetchPaidOrders();
+    }
   };
 
   // Function to remove a dish from the cart
@@ -92,6 +96,8 @@ const App = () => {
         },
         body: JSON.stringify({
           dishes,
+          restaurantId,
+          tableNo: tableNumber,
           sessionId,
           paymentId,
           status: "Completed",
