@@ -12,11 +12,11 @@ const App = () => {
   const [confirmedOrders, setConfirmedOrders] = useState([]);
   const [showOrders, setShowOrders] = useState(false);
   const [paidOrders, setPaidOrders] = useState([]);
+  const sessionId = "abc121yz";
 
   const location = useLocation();
 
   async function fetchPaidOrders() {
-    const sessionId = "abc123yz";
     try {
       const resPaidOrders = await fetch(
         `http://localhost:3001/api/orders/${sessionId}`,
@@ -81,8 +81,6 @@ const App = () => {
 
   const handleCreateOrder = async (paymentId, confirmedOrders) => {
     try {
-      const sessionId = "abc123xyz"; // Replace with actual session ID logic
-
       // Prepare dishes data for the API request
       const dishes = confirmedOrders.map((order) => ({
         menuItem: order.dishid, // Use dish ID from confirmed orders

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "flowbite-react";
-import { FiCoffee, FiSun, FiMoon, FiDroplet } from "react-icons/fi"; // Icons for example
+import { FiCoffee, FiSun, FiMoon, FiDroplet } from "react-icons/fi";
 import { FaDrumstickBite } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import toastify styles
+import "react-toastify/dist/ReactToastify.css";
 import Orders from "./Orders";
 
 function HomePage({
@@ -23,16 +23,15 @@ function HomePage({
   const [allDishes, setAllDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [readMoreStates, setReadMoreStates] = useState({});
 
-  // Function to change the current index
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
   };
 
-  // Change slide every 3 seconds
   useEffect(() => {
     const interval = setInterval(nextSlide, 3000);
-    return () => clearInterval(interval); // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, [bannerImages.length]);
 
   const categoryIcons = {
@@ -70,7 +69,6 @@ function HomePage({
     }
   }, [restaurantId]);
 
-  // Function to handle adding a dish to the cart
   const handleAddToCart = (dish) => {
     const dishAlreadyInCart = order.some((item) => item.dishname === dish.name);
     if (dishAlreadyInCart) {
@@ -95,6 +93,14 @@ function HomePage({
         autoClose: 3000,
       });
     }
+  };
+
+  // Function to toggle Read More/Less for a specific dish
+  const toggleReadMore = (dishId) => {
+    setReadMoreStates((prevStates) => ({
+      ...prevStates,
+      [dishId]: !prevStates[dishId], // Toggle the specific dish's readMore state
+    }));
   };
 
   return (
@@ -140,7 +146,7 @@ function HomePage({
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 px-6">
               {categories.map((category) => {
-                const Icon = categoryIcons[category] || FiDroplet; // Default Icon if none is specified
+                const Icon = categoryIcons[category] || FiDroplet;
                 return (
                   <div
                     key={category}
@@ -150,11 +156,9 @@ function HomePage({
                       color="light"
                       className="relative w-full h-36 rounded-lg bg-white shadow-md border border-gray-200 hover:bg-blue-100 transition duration-300 flex flex-col items-center justify-center"
                     >
-                      {/* Animated Icon */}
                       <div className="bg-blue-100 p-3 rounded-full group-hover:bg-blue-200 transition duration-300">
                         <Icon className="w-10 h-10 text-blue-600 group-hover:text-blue-800" />
                       </div>
-                      {/* Category Name */}
                       <span className="text-lg font-medium text-gray-800 mt-3 group-hover:text-blue-800 transition duration-300">
                         {category}
                       </span>
@@ -186,7 +190,15 @@ function HomePage({
                     </h3>
                     {/* Dish Description */}
                     <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
-                      {dish.text}
+                      {readMoreStates[dish._id]
+                        ? dish.text
+                        : `${dish.text.substring(0, 100)}... `}
+                      <span
+                        className="text-teal-600 dark:text-teal-400 cursor-pointer"
+                        onClick={() => toggleReadMore(dish._id)}
+                      >
+                        {readMoreStates[dish._id] ? "Read Less" : "Read More"}
+                      </span>
                     </p>
                     {/* Price */}
                     <p className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
