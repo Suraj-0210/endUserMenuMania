@@ -144,24 +144,26 @@ function HomePage({
             <h2 className="text-center text-3xl font-bold mb-6 text-gray-800 tracking-wide">
               Explore Our Categories
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 px-6">
+            <div className="flex overflow-x-auto space-x-4 px-6 scrollbar-hide">
               {categories.map((category) => {
                 const Icon = categoryIcons[category] || FiDroplet;
                 return (
                   <div
                     key={category}
-                    className="flex flex-col items-center group transition-transform duration-300 transform hover:scale-105"
+                    className="flex-shrink-0 flex flex-col items-center group transition-transform duration-300 transform hover:scale-105"
                   >
                     <Button
                       color="light"
-                      className="relative w-full h-36 rounded-lg bg-white shadow-md border border-gray-200 hover:bg-blue-100 transition duration-300 flex flex-col items-center justify-center"
+                      className="relative w-36 h-36 rounded-lg bg-white shadow-md border border-gray-200 hover:bg-blue-100 transition duration-300 flex flex-col items-center justify-center"
                     >
-                      <div className="bg-blue-100 p-3 rounded-full group-hover:bg-blue-200 transition duration-300">
-                        <Icon className="w-10 h-10 text-blue-600 group-hover:text-blue-800" />
+                      <div className="p-auto">
+                        <div className="bg-blue-100 p-3 rounded-full group-hover:bg-blue-200 transition duration-300">
+                          <Icon className="w-10 h-10 text-blue-600 group-hover:text-blue-800" />
+                        </div>
+                        <span className="text-lg font-medium text-gray-800 mt-3 group-hover:text-blue-800 transition duration-300">
+                          {category}
+                        </span>
                       </div>
-                      <span className="text-lg font-medium text-gray-800 mt-3 group-hover:text-blue-800 transition duration-300">
-                        {category}
-                      </span>
                     </Button>
                   </div>
                 );
@@ -191,8 +193,8 @@ function HomePage({
                     {/* Dish Description */}
                     <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
                       {readMoreStates[dish._id]
-                        ? dish.text
-                        : `${dish.text.substring(0, 100)}... `}
+                        ? dish.description
+                        : `${dish.description.substring(0, 100)}... `}
                       <span
                         className="text-teal-600 dark:text-teal-400 cursor-pointer"
                         onClick={() => toggleReadMore(dish._id)}
@@ -200,15 +202,21 @@ function HomePage({
                         {readMoreStates[dish._id] ? "Read Less" : "Read More"}
                       </span>
                     </p>
-                    {/* Price */}
-                    <p className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
-                      ${dish.price}
-                    </p>
+                    <div className="flex flex-row justify-between">
+                      {/* Price */}
+                      <p className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
+                        ${dish.price}
+                      </p>
+                      <span className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
+                        Stock: {dish.stock}
+                      </span>
+                    </div>
                   </div>
                   {/* Add to Cart Button */}
                   <Button
                     className="m-2 text-xs sm:text-sm"
                     gradientMonochrome="blue"
+                    disabled={dish.stock === 0}
                     onClick={() => handleAddToCart(dish)}
                   >
                     Add to Cart
