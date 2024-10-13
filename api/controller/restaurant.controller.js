@@ -1,5 +1,6 @@
 import Restaurant from "../models/restaurant.model.js";
 import { v4 as uuidv4 } from "uuid"; // Import UUID for generating session IDs
+import Session from "../models/session.model.js";
 
 export const testRestaurant = async (req, res) => {
   res.json({ Success: "Restaurant Controller working successfully" });
@@ -12,16 +13,49 @@ export const getRestaurant = async (req, res) => {
     // Check for existing sessionId in cookies
     let sessionId = req.cookies.sessionId;
 
-    console.log("SessionId" + sessionId);
+    if (sessionId === undefined || sessionId === null || sessionId === "") {
+      console.log("User hasn't sessionId");
+      try {
+        // Generate a new session ID
+        const newsessionId = uuidv4();
+        console.log("New SessionId Generated:");
 
-    // If no sessionId, generate a new one
-    if (!sessionId) {
-      sessionId = uuidv4(); // Generate a new session ID
+        // Create a new session document
+        const newSession = new Session({ sessionId: newsessionId });
+        const newsessionObj = await newSession.save();
+
+        sessionId = newsessionObj.sessionId;
+      } catch (error) {
+        console.error("Error creating session:", error);
+      }
+    } else {
+      console.log("User has SessionId ");
+      try {
+        // Check if the session ID exists in the database
+        const session = await Session.findOne({ sessionId });
+
+        if (session === undefined || session === null || session === "") {
+          console.log("User's SessionId is not valid");
+          try {
+            // Generate a new session ID
+            sessionId = uuidv4();
+
+            // Create a new session document
+            const newSession = new Session({ sessionId });
+            const newsessionObj = await newSession.save();
+            sessionId = newsessionObj.sessionId;
+          } catch (error) {
+            console.error("Error creating session:", error);
+          }
+        }
+
+        // If found, return the valid session information
+      } catch (error) {
+        console.error("Error checking session:", error);
+      }
     }
 
     const restaurant = await Restaurant.findById(restaurantId);
-
-    console.log(sessionId);
 
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });

@@ -7,6 +7,7 @@ import bodyParser from "body-parser";
 import dishRoute from "./routes/dish.route.js";
 import restaurantRoute from "./routes/restaurant.route.js";
 import ordersRoute from "./routes/order.route.js";
+import sessionRoute from "./routes/session.route.js";
 import cookieParser from "cookie-parser";
 
 dotenv.config();
@@ -45,6 +46,7 @@ app.use(express.json());
 app.use("/api/dish", dishRoute);
 app.use("/api/restaurant", restaurantRoute);
 app.use("/api", ordersRoute);
+app.use("/api/session", sessionRoute);
 
 app.post("/create-order", async (req, res) => {
   const options = {
