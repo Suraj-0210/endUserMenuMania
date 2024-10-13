@@ -7,6 +7,7 @@ import bodyParser from "body-parser";
 import dishRoute from "./routes/dish.route.js";
 import restaurantRoute from "./routes/restaurant.route.js";
 import ordersRoute from "./routes/order.route.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use(
   })
 );
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // Body parser middleware (if you plan to handle JSON data)
 app.use(express.json());

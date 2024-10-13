@@ -118,7 +118,7 @@ const Cart = ({
                         {item.dishname}
                       </h3>
                       <p className="text-sm md:text-base text-gray-500">
-                        ${item.price} x {item.quantity}{" "}
+                        ₹{item.price} x {item.quantity}{" "}
                         {/* Show price and quantity */}
                       </p>
                     </div>
@@ -143,6 +143,7 @@ const Cart = ({
                     <button
                       onClick={() => handleQuantityChange(item, "add")}
                       className="p-2 rounded-full border border-gray-300"
+                      disabled={item.quantity >= item.stock}
                     >
                       <AiOutlinePlus />
                     </button>

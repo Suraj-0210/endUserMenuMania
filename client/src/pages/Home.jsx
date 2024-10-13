@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "flowbite-react";
 import { FiCoffee, FiSun, FiMoon, FiDroplet } from "react-icons/fi";
+import { CiViewList } from "react-icons/ci";
+import { GiCakeSlice } from "react-icons/gi";
+import { RiDrinks2Fill } from "react-icons/ri";
+import { IoFastFoodOutline } from "react-icons/io5";
 import { FaDrumstickBite } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -19,11 +23,21 @@ function HomePage({
   paidOrders,
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const categories = ["Breakfast", "Lunch", "Dinner", "Biriyani"];
+  const categories = [
+    "All",
+    "Breakfast",
+    "Lunch",
+    "Dinner",
+    "Biriyani",
+    "Drinks",
+    "Snacks",
+    "Dessert",
+  ];
   const [allDishes, setAllDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [readMoreStates, setReadMoreStates] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
@@ -35,10 +49,14 @@ function HomePage({
   }, [bannerImages.length]);
 
   const categoryIcons = {
+    All: CiViewList,
     Breakfast: FiCoffee,
     Lunch: FiSun,
     Dinner: FiMoon,
     Biriyani: FaDrumstickBite,
+    Drinks: RiDrinks2Fill,
+    Snacks: IoFastFoodOutline,
+    Dessert: GiCakeSlice,
   };
 
   const fetchAllDishes = async () => {
@@ -85,6 +103,7 @@ function HomePage({
           image: dish.image,
           price: dish.price,
           quantity: 1,
+          stock: dish.stock,
         },
       ];
       setOrder(updatedOrder);
@@ -101,6 +120,11 @@ function HomePage({
       ...prevStates,
       [dishId]: !prevStates[dishId], // Toggle the specific dish's readMore state
     }));
+  };
+
+  // Function to handle category selection
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
   };
 
   return (
@@ -155,6 +179,7 @@ function HomePage({
                     <Button
                       color="light"
                       className="relative w-36 h-36 rounded-lg bg-white shadow-md border border-gray-200 hover:bg-blue-100 transition duration-300 flex flex-col items-center justify-center"
+                      onClick={() => handleCategorySelect(category)} // Update selected category on click
                     >
                       <div className="p-auto">
                         <div className="bg-blue-100 p-3 rounded-full group-hover:bg-blue-200 transition duration-300">
@@ -174,55 +199,61 @@ function HomePage({
           {/* Dishes Section */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 px-2">
             {!loading &&
-              allDishes.map((dish, index) => (
-                <div
-                  key={index}
-                  className="bg-white shadow-lg rounded-lg overflow-hidden flex flex-col"
-                >
-                  {/* Dish Image */}
-                  <img
-                    src={dish.image}
-                    alt={dish.name}
-                    className="w-full h-24 object-cover sm:h-32 lg:h-48"
-                  />
-                  <div className="p-2 flex-grow">
-                    {/* Dish Name */}
-                    <h3 className="text-sm sm:text-md font-bold text-gray-800">
-                      {dish.name}
-                    </h3>
-                    {/* Dish Description */}
-                    <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
-                      {readMoreStates[dish._id]
-                        ? dish.description
-                        : `${dish.description.substring(0, 100)}... `}
-                      <span
-                        className="text-teal-600 dark:text-teal-400 cursor-pointer"
-                        onClick={() => toggleReadMore(dish._id)}
-                      >
-                        {readMoreStates[dish._id] ? "Read Less" : "Read More"}
-                      </span>
-                    </p>
-                    <div className="flex flex-row justify-between">
-                      {/* Price */}
-                      <p className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
-                        ${dish.price}
-                      </p>
-                      <span className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
-                        Stock: {dish.stock}
-                      </span>
-                    </div>
-                  </div>
-                  {/* Add to Cart Button */}
-                  <Button
-                    className="m-2 text-xs sm:text-sm"
-                    gradientMonochrome="blue"
-                    disabled={dish.stock === 0}
-                    onClick={() => handleAddToCart(dish)}
+              allDishes
+                .filter(
+                  (dish) =>
+                    selectedCategory === "All" ||
+                    dish.category === selectedCategory
+                ) // Filter dishes based on selected category
+                .map((dish, index) => (
+                  <div
+                    key={index}
+                    className="bg-white shadow-lg rounded-lg overflow-hidden flex flex-col"
                   >
-                    Add to Cart
-                  </Button>
-                </div>
-              ))}
+                    {/* Dish Image */}
+                    <img
+                      src={dish.image}
+                      alt={dish.name}
+                      className="w-full h-24 object-cover sm:h-32 lg:h-48"
+                    />
+                    <div className="p-2 flex-grow">
+                      {/* Dish Name */}
+                      <h3 className="text-sm sm:text-md font-bold text-gray-800">
+                        {dish.name}
+                      </h3>
+                      {/* Dish Description */}
+                      <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
+                        {readMoreStates[dish._id]
+                          ? dish.description
+                          : `${dish.description.substring(0, 100)}... `}
+                        <span
+                          className="text-teal-600 dark:text-teal-400 cursor-pointer"
+                          onClick={() => toggleReadMore(dish._id)}
+                        >
+                          {readMoreStates[dish._id] ? "Read Less" : "Read More"}
+                        </span>
+                      </p>
+                      <div className="flex flex-row justify-between">
+                        {/* Price */}
+                        <p className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
+                          ₹{dish.price}
+                        </p>
+                        <span className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
+                          Stock: {dish.stock}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Add to Cart Button */}
+                    <Button
+                      className="m-2 text-xs sm:text-sm"
+                      gradientMonochrome="blue"
+                      disabled={dish.stock === 0}
+                      onClick={() => handleAddToCart(dish)}
+                    >
+                      Add to Cart
+                    </Button>
+                  </div>
+                ))}
           </div>
 
           {/* Toast Container for notifications */}

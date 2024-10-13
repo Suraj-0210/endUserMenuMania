@@ -5,6 +5,8 @@ import { FiShoppingCart } from "react-icons/fi"; // Cart Icon
 import { Link } from "react-router-dom"; // Import Link
 
 function Header({
+  restaurantDetails,
+  setRestaurantDetails,
   restaurantId,
   toggleShowCart,
   order,
@@ -12,7 +14,6 @@ function Header({
   tableNumber,
   setShowOrders,
 }) {
-  const [restaurantDetails, setRestaurantDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -23,12 +24,18 @@ function Header({
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
         }
       );
       if (!res.ok) {
         throw new Error("Network response was not ok");
       }
       const data = await res.json();
+      if (data.sessionId) {
+        console.log("Session ID:", data.sessionId);
+        // Store sessionId in local storage
+        localStorage.setItem("sessionId", data.sessionId);
+      }
       setRestaurantDetails(data);
     } catch (err) {
       setError("Failed to fetch restaurant details.");

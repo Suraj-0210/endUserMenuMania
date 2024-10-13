@@ -12,7 +12,8 @@ const App = () => {
   const [confirmedOrders, setConfirmedOrders] = useState([]);
   const [showOrders, setShowOrders] = useState(false);
   const [paidOrders, setPaidOrders] = useState([]);
-  const sessionId = "abc121yz";
+  const [restaurantDetails, setRestaurantDetails] = useState(null);
+  const sessionId = localStorage.getItem("sessionId");
 
   const location = useLocation();
 
@@ -102,6 +103,16 @@ const App = () => {
         }),
       });
 
+      await fetch(`http://localhost:3001/api/dish/order`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dishes,
+        }),
+      });
+
       const resPaidOrders = await fetch(
         `http://localhost:3001/api/orders/${sessionId}`,
         {
@@ -146,10 +157,13 @@ const App = () => {
   console.log(order);
   console.log(confirmedOrders);
   console.log(paidOrders);
+  console.log("SessionId: " + sessionId);
 
   return (
     <div>
       <Header
+        restaurantDetails={restaurantDetails}
+        setRestaurantDetails={setRestaurantDetails}
         restaurantId={restaurantId}
         toggleShowCart={toggleShowCart}
         order={order}
