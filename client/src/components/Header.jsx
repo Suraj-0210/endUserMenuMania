@@ -19,6 +19,7 @@ function Header({
   const [error, setError] = useState(null);
 
   const fetchRestaurantDetails = async () => {
+    console.log("Cookies before fetch:", document.cookie);
     try {
       const res = await fetch(
         `https://endusermenumania.onrender.com/api/restaurant/${restaurantId}`,
