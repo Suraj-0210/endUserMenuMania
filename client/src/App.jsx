@@ -14,10 +14,18 @@ const App = () => {
   const [showOrders, setShowOrders] = useState(false);
   const [paidOrders, setPaidOrders] = useState([]);
   const [restaurantDetails, setRestaurantDetails] = useState(null);
-  const sessionId = localStorage.getItem("sessionId");
+
   const [searchText, setSearchText] = useState();
 
   const location = useLocation();
+
+  const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  };
+
+  const sessionId = getCookie("sessionId");
 
   async function fetchPaidOrders() {
     try {

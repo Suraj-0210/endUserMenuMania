@@ -34,8 +34,8 @@ function Header({
       const data = await res.json();
       if (data.sessionId) {
         console.log("Session ID:", data.sessionId);
-        // Store sessionId in local storage
-        localStorage.setItem("sessionId", data.sessionId);
+        // Store sessionId in a cookie
+        document.cookie = `sessionId=${data.sessionId}; path=/;`;
       }
       setRestaurantDetails(data);
     } catch (err) {
