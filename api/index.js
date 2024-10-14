@@ -51,6 +51,9 @@ app.use("/api/dish", dishRoute);
 app.use("/api/restaurant", restaurantRoute);
 app.use("/api", ordersRoute);
 app.use("/api/session", sessionRoute);
+app.get("/", (req, res) => {
+  res.send("You are Good to GO!!");
+});
 
 app.post("/create-order", async (req, res) => {
   const options = {
