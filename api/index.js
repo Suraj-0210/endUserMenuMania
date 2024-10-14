@@ -31,7 +31,11 @@ const app = express();
 // CORS Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5102", "http://localhost:5173"], // Allow this origin
+    origin: [
+      "http://localhost:5102",
+      "http://localhost:5173",
+      "https://endusermenumania-1.onrender.com/",
+    ], // Allow this origin
     methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
     credentials: true, // Allow credentials if needed
   })
