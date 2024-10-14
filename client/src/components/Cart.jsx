@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Modal } from "flowbite-react";
 import { FiTrash2 } from "react-icons/fi";
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai"; // Import icons for plus and minus
@@ -15,7 +15,7 @@ const Cart = ({
   const totalPrice = order.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
-  ); // Multiply price by quantity
+  );
 
   // Handle quantity change
   const handleQuantityChange = (item, action) => {
@@ -88,7 +88,7 @@ const Cart = ({
         show={showCart}
         onClose={() => toggleShowCart()}
         size="lg"
-        className="min-h-[calc(100vh-30px)] max-w-[90%] md:max-w-[60%] mx-auto rounded-2xl z-40 relative"
+        className="min-h-[calc(100vh-30px)] max-w-[95%] md:max-w-[60%] mx-auto rounded-2xl z-40 relative"
         dismissible // Allow closing when clicking outside the modal
       >
         {/* Header */}
@@ -122,43 +122,44 @@ const Cart = ({
                       </h3>
                       <p className="text-sm md:text-base text-gray-500">
                         ₹{item.price} x {item.quantity}{" "}
-                        {/* Show price and quantity */}
                       </p>
                     </div>
                   </div>
 
-                  {/* Quantity Control */}
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-col md:flex-row justify-center">
+                    {/* Quantity Control */}
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleQuantityChange(item, "subtract")}
+                        className={`p-2 rounded-full border border-gray-300 ${
+                          item.quantity <= 1
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                        disabled={item.quantity <= 1}
+                      >
+                        <AiOutlineMinus />
+                      </button>
+                      <span className="text-lg font-semibold">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => handleQuantityChange(item, "add")}
+                        className="p-2 rounded-full border border-gray-300"
+                        disabled={item.quantity >= item.stock}
+                      >
+                        <AiOutlinePlus />
+                      </button>
+                    </div>
+
+                    {/* Remove Button */}
                     <button
-                      onClick={() => handleQuantityChange(item, "subtract")}
-                      className={`p-2 rounded-full border border-gray-300 ${
-                        item.quantity <= 1
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
-                      }`}
-                      disabled={item.quantity <= 1}
+                      className="text-red-500 hover:text-red-700 transition duration-200 flex items-center justify-center w-10 h-10"
+                      onClick={() => handleRemoveDish(item)}
                     >
-                      <AiOutlineMinus />
-                    </button>
-                    <span className="text-lg font-semibold">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => handleQuantityChange(item, "add")}
-                      className="p-2 rounded-full border border-gray-300"
-                      disabled={item.quantity >= item.stock}
-                    >
-                      <AiOutlinePlus />
+                      <FiTrash2 size={22} />
                     </button>
                   </div>
-
-                  {/* Remove Button */}
-                  <button
-                    className="text-red-500 hover:text-red-700 transition duration-200"
-                    onClick={() => handleRemoveDish(item)}
-                  >
-                    <FiTrash2 size={22} />
-                  </button>
                 </div>
               ))}
 
