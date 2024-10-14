@@ -8,7 +8,7 @@ export const testRestaurant = async (req, res) => {
 
 export const getRestaurant = async (req, res) => {
   const restaurantId = req.params.restaurantid;
-  console.log("Received cookies:", req.cookies);
+  console.log("Received cookies:", req.cookies.sessionId);
 
   try {
     // Check for existing sessionId in cookies
