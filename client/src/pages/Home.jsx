@@ -39,6 +39,7 @@ function HomePage({
   const [error, setError] = useState(null);
   const [readMoreStates, setReadMoreStates] = useState({});
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const BASE_URL = "https://endusermenumania.onrender.com";
 
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % bannerImages.length);
@@ -62,13 +63,10 @@ function HomePage({
 
   const fetchAllDishes = async () => {
     try {
-      const res = await fetch(
-        `https://endusermenumania.onrender.com/api/dish/${restaurantId}`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const res = await fetch(`${BASE_URL}/api/dish/${restaurantId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
       if (!res.ok) {
         throw new Error("Network response was not ok");
       }
