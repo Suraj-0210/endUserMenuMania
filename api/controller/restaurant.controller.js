@@ -68,7 +68,7 @@ export const getRestaurant = async (req, res) => {
     res
       .status(200)
       .cookie("sessionId", sessionId, {
-        httpOnly: true,
+        httpOnly: false,
         secure: true,
       })
       .json({
