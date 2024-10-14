@@ -34,11 +34,14 @@ const Cart = ({
 
   // Function to handle payment
   const handlePayment = async () => {
-    const response = await fetch("http://localhost:3001/create-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: totalPrice * 100 }), // Amount in paise
-    });
+    const response = await fetch(
+      "https://endusermenumania.onrender.com/create-order",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: totalPrice * 100 }), // Amount in paise
+      }
+    );
 
     const data = await response.json();
 

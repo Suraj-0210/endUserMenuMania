@@ -62,7 +62,7 @@ function HomePage({
   const fetchAllDishes = async () => {
     try {
       const res = await fetch(
-        `http://localhost:3001/api/dish/${restaurantId}`,
+        `https://endusermenumania.onrender.com/api/dish/${restaurantId}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },

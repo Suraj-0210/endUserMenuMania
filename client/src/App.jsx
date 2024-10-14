@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Cart from "./components/Cart";
+import Footer from "./components/Footer";
 
 const App = () => {
   const [restaurantId, setRestaurantId] = useState(null);
@@ -20,7 +21,7 @@ const App = () => {
   async function fetchPaidOrders() {
     try {
       const resPaidOrders = await fetch(
-        `http://localhost:3001/api/orders/${sessionId}`,
+        `https://endusermenumania.onrender.com/api/orders/${sessionId}`,
         {
           method: "GET",
           headers: {
@@ -88,22 +89,25 @@ const App = () => {
         quantity: order.quantity,
       }));
 
-      const response = await fetch("http://localhost:3001/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          dishes,
-          restaurantId,
-          tableNo: tableNumber,
-          sessionId,
-          paymentId,
-          status: "Completed",
-        }),
-      });
+      const response = await fetch(
+        "https://endusermenumania.onrender.coms/api/orders",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            dishes,
+            restaurantId,
+            tableNo: tableNumber,
+            sessionId,
+            paymentId,
+            status: "Completed",
+          }),
+        }
+      );
 
-      await fetch(`http://localhost:3001/api/dish/order`, {
+      await fetch(`https://endusermenumania.onrender.com/api/dish/order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -114,7 +118,7 @@ const App = () => {
       });
 
       const resPaidOrders = await fetch(
-        `http://localhost:3001/api/orders/${sessionId}`,
+        `https://endusermenumania.onrender.com/api/orders/${sessionId}`,
         {
           method: "GET",
           headers: {
@@ -198,6 +202,7 @@ const App = () => {
           }
         />
       </Routes>
+      <Footer restaurantDetails={restaurantDetails} />
     </div>
   );
 };

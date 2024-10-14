@@ -20,7 +20,7 @@ function Header({
   const fetchRestaurantDetails = async () => {
     try {
       const res = await fetch(
-        `http://localhost:3001/api/restaurant/${restaurantId}`,
+        `https://endusermenumania.onrender.com/api/restaurant/${restaurantId}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
