@@ -186,14 +186,14 @@ function HomePage({
                   >
                     <Button
                       color="light"
-                      className="relative w-36 h-36 rounded-lg bg-white shadow-md border border-gray-200 hover:bg-blue-100 transition duration-300 flex flex-col items-center justify-center"
+                      className="relative w-28 h-28 md:w-36 md:h-36 rounded-lg bg-white shadow-md border border-gray-200 hover:bg-blue-100 transition duration-300 flex flex-col items-center justify-center"
                       onClick={() => handleCategorySelect(category)} // Update selected category on click
                     >
                       <div className="p-auto">
                         <div className="bg-blue-100 p-3 rounded-full group-hover:bg-blue-200 transition duration-300">
-                          <Icon className="w-10 h-10 text-blue-600 group-hover:text-blue-800" />
+                          <Icon className="w-8 h-8 md:w-10 md:h-10 text-blue-600 group-hover:text-blue-800" />
                         </div>
-                        <span className="text-lg font-medium text-gray-800 mt-3 group-hover:text-blue-800 transition duration-300">
+                        <span className="text-sm md:text-lg font-medium text-gray-800 mt-2 group-hover:text-blue-800 transition duration-300">
                           {category}
                         </span>
                       </div>

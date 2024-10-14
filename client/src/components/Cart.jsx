@@ -108,13 +108,13 @@ const Cart = ({
               {order.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between bg-white rounded-lg shadow-md p-4 md:p-6 transition duration-300 hover:shadow-lg"
+                  className="flex items-center justify-between bg-white rounded-lg shadow-md p-4 md:p-6 transition duration-300 gap-3 hover:shadow-lg"
                 >
-                  <div className="flex items-center space-x-4">
+                  <div className="flex-col md:flex md:flex-row justify-start gap-2 items-center space-x-4">
                     <img
                       src={item.image}
                       alt={item.dishname}
-                      className="w-14 h-14 md:w-16 md:h-16 object-cover rounded-md"
+                      className="w-14 h-14 md:w-16 md:h-16 m-3 object-cover rounded-md"
                     />
                     <div>
                       <h3 className="text-md md:text-lg font-semibold text-gray-700">

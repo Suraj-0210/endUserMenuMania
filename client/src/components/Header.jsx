@@ -67,10 +67,10 @@ function Header({
 
   return (
     <header className="p-4 bg-white shadow-lg">
-      <div className="flex items-center justify-between flex-wrap">
+      <div className="flex flex-col md:flex md:flex-row justify-center items-center md:justify-between md:flex-wrap">
         {/* Logo Section */}
         <div className="flex items-center">
-          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-gray-300 shadow-md">
+          <div className="w-[100px] h-[100px] md:w-16 md:h-16 rounded-full overflow-hidden border-2 border-gray-300 shadow-md">
             <img
               src={restaurantDetails.logo}
               alt="Logo"
