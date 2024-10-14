@@ -15,6 +15,7 @@ const App = () => {
   const [paidOrders, setPaidOrders] = useState([]);
   const [restaurantDetails, setRestaurantDetails] = useState(null);
   const sessionId = localStorage.getItem("sessionId");
+  const [searchText, setSearchText] = useState();
 
   const location = useLocation();
 
@@ -90,7 +91,7 @@ const App = () => {
       }));
 
       const response = await fetch(
-        "https://endusermenumania.onrender.coms/api/orders",
+        "https://endusermenumania.onrender.com/api/orders",
         {
           method: "POST",
           headers: {
@@ -155,17 +156,19 @@ const App = () => {
     toggleShowOrders(); // Show orders after placing them
 
     // Call create order with the new confirmed orders
-    handleCreateOrder(paymentId, newConfirmedOrders);
+    handleCreateOrder(paymentId, confirmedOrders);
   };
 
   console.log(order);
   console.log(confirmedOrders);
   console.log(paidOrders);
   console.log("SessionId: " + sessionId);
+  console.log("searchText: " + searchText);
 
   return (
     <div>
       <Header
+        setSearchText={setSearchText}
         restaurantDetails={restaurantDetails}
         setRestaurantDetails={setRestaurantDetails}
         restaurantId={restaurantId}
@@ -188,6 +191,7 @@ const App = () => {
           path="/:restaurantId"
           element={
             <Home
+              searchText={searchText}
               bannerImages={bannerImages}
               restaurantId={restaurantId}
               tableNumber={tableNumber}

@@ -12,6 +12,7 @@ export const getRestaurant = async (req, res) => {
   try {
     // Check for existing sessionId in cookies
     let sessionId = req.cookies.sessionId;
+    console.log("The user SessionID: " + sessionId);
 
     if (sessionId === undefined || sessionId === null || sessionId === "") {
       console.log("User hasn't sessionId");

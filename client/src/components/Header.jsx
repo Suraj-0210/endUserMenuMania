@@ -5,6 +5,7 @@ import { FiShoppingCart } from "react-icons/fi"; // Cart Icon
 import { Link } from "react-router-dom"; // Import Link
 
 function Header({
+  setSearchText,
   restaurantDetails,
   setRestaurantDetails,
   restaurantId,
@@ -43,6 +44,10 @@ function Header({
     } finally {
       setLoading(false);
     }
+  };
+
+  const onSearchTextHandler = (e) => {
+    setSearchText(e.target.value);
   };
 
   useEffect(() => {
@@ -84,6 +89,7 @@ function Header({
             placeholder="Search for dishes and drinks"
             className="rounded-full px-4 py-2 text-sm border border-gray-300 shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
             rightIcon={AiOutlineSearch}
+            onChange={onSearchTextHandler}
           />
           <Button
             className="absolute right-0 top-0 h-full rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center px-4"

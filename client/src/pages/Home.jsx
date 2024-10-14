@@ -11,6 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Orders from "./Orders";
 
 function HomePage({
+  searchText,
   bannerImages,
   restaurantId,
   tableNumber,
@@ -127,6 +128,15 @@ function HomePage({
     setSelectedCategory(category);
   };
 
+  // Filter dishes based on search text and selected category
+  const filteredDishes = allDishes.filter((dish) => {
+    const matchesSearch =
+      !searchText || dish.name.toLowerCase().includes(searchText.toLowerCase());
+    const matchesCategory =
+      selectedCategory === "All" || dish.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
   return (
     <>
       {showOrders ? (
@@ -199,61 +209,55 @@ function HomePage({
           {/* Dishes Section */}
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 px-2">
             {!loading &&
-              allDishes
-                .filter(
-                  (dish) =>
-                    selectedCategory === "All" ||
-                    dish.category === selectedCategory
-                ) // Filter dishes based on selected category
-                .map((dish, index) => (
-                  <div
-                    key={index}
-                    className="bg-white shadow-lg rounded-lg overflow-hidden flex flex-col"
-                  >
-                    {/* Dish Image */}
-                    <img
-                      src={dish.image}
-                      alt={dish.name}
-                      className="w-full h-24 object-cover sm:h-32 lg:h-48"
-                    />
-                    <div className="p-2 flex-grow">
-                      {/* Dish Name */}
-                      <h3 className="text-sm sm:text-md font-bold text-gray-800">
-                        {dish.name}
-                      </h3>
-                      {/* Dish Description */}
-                      <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
-                        {readMoreStates[dish._id]
-                          ? dish.description
-                          : `${dish.description.substring(0, 100)}... `}
-                        <span
-                          className="text-teal-600 dark:text-teal-400 cursor-pointer"
-                          onClick={() => toggleReadMore(dish._id)}
-                        >
-                          {readMoreStates[dish._id] ? "Read Less" : "Read More"}
-                        </span>
+              filteredDishes.map((dish, index) => (
+                <div
+                  key={index}
+                  className="bg-white shadow-lg rounded-lg overflow-hidden flex flex-col"
+                >
+                  {/* Dish Image */}
+                  <img
+                    src={dish.image}
+                    alt={dish.name}
+                    className="w-full h-24 object-cover sm:h-32 lg:h-48"
+                  />
+                  <div className="p-2 flex-grow">
+                    {/* Dish Name */}
+                    <h3 className="text-sm sm:text-md font-bold text-gray-800">
+                      {dish.name}
+                    </h3>
+                    {/* Dish Description */}
+                    <p className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
+                      {readMoreStates[dish._id]
+                        ? dish.description
+                        : `${dish.description.substring(0, 100)}... `}
+                      <span
+                        className="text-teal-600 dark:text-teal-400 cursor-pointer"
+                        onClick={() => toggleReadMore(dish._id)}
+                      >
+                        {readMoreStates[dish._id] ? "Read Less" : "Read More"}
+                      </span>
+                    </p>
+                    <div className="flex flex-row justify-between">
+                      {/* Price */}
+                      <p className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
+                        ₹{dish.price}
                       </p>
-                      <div className="flex flex-row justify-between">
-                        {/* Price */}
-                        <p className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
-                          ₹{dish.price}
-                        </p>
-                        <span className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
-                          Stock: {dish.stock}
-                        </span>
-                      </div>
+                      <span className="text-blue-600 font-bold mt-2 sm:mt-4 text-xs sm:text-sm">
+                        Stock: {dish.stock}
+                      </span>
                     </div>
-                    {/* Add to Cart Button */}
-                    <Button
-                      className="m-2 text-xs sm:text-sm"
-                      gradientMonochrome="blue"
-                      disabled={dish.stock === 0}
-                      onClick={() => handleAddToCart(dish)}
-                    >
-                      Add to Cart
-                    </Button>
                   </div>
-                ))}
+                  {/* Add to Cart Button */}
+                  <Button
+                    className="m-2 text-xs sm:text-sm"
+                    gradientMonochrome="blue"
+                    disabled={dish.stock === 0}
+                    onClick={() => handleAddToCart(dish)}
+                  >
+                    Add to Cart
+                  </Button>
+                </div>
+              ))}
           </div>
 
           {/* Toast Container for notifications */}
