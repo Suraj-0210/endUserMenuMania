@@ -164,7 +164,7 @@ const App = () => {
     toggleShowOrders(); // Show orders after placing them
 
     // Call create order with the new confirmed orders
-    handleCreateOrder(paymentId, confirmedOrders);
+    handleCreateOrder(paymentId, newConfirmedOrders);
   };
 
   console.log(order);
