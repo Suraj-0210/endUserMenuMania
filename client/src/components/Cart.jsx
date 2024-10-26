@@ -11,6 +11,8 @@ const Cart = ({
   setOrder,
   handlePaymentSuccess,
 }) => {
+  const [payAfterService, setPayAfterService] = useState(false); // Track checkbox state
+
   // Calculate total price
   const totalPrice = order.reduce(
     (acc, item) => acc + item.price * item.quantity,
@@ -34,6 +36,12 @@ const Cart = ({
 
   // Function to handle payment
   const handlePayment = async () => {
+    if (payAfterService) {
+      alert("You've selected to pay after service.");
+      handlePaymentSuccess("Pay_After_Service");
+      return;
+    }
+
     const response = await fetch(
       "https://endusermenumania.onrender.com/create-order",
       {
@@ -75,7 +83,6 @@ const Cart = ({
 
   return (
     <div className="relative">
-      {/* Blurred background when modal is open */}
       {showCart && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-30"
@@ -89,9 +96,8 @@ const Cart = ({
         onClose={() => toggleShowCart()}
         size="lg"
         className="min-h-[calc(100vh-30px)] max-w-[95%] md:max-w-[60%] mx-auto rounded-2xl z-40 relative"
-        dismissible // Allow closing when clicking outside the modal
+        dismissible
       >
-        {/* Header */}
         <Modal.Header className="bg-gray-100 py-4 px-4 relative">
           <p className="text-2xl md:text-3xl font-bold text-gray-700 relative">
             Your Cart
@@ -104,7 +110,7 @@ const Cart = ({
               Your cart is empty!
             </div>
           ) : (
-            <div className="flex flex-col space-y-6">
+            <div className="flex flex-col space-y-6 max-h-[300px] overflow-y-auto px-4">
               {order.map((item, index) => (
                 <div
                   key={index}
@@ -121,13 +127,12 @@ const Cart = ({
                         {item.dishname}
                       </h3>
                       <p className="text-sm md:text-base text-gray-500">
-                        ₹{item.price} x {item.quantity}{" "}
+                        ₹{item.price} x {item.quantity}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex flex-col md:flex-row justify-center">
-                    {/* Quantity Control */}
+                  <div className="flex flex-col md:flex-row items-center justify-center">
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleQuantityChange(item, "subtract")}
@@ -152,9 +157,9 @@ const Cart = ({
                       </button>
                     </div>
 
-                    {/* Remove Button */}
+                    {/* Conditional layout for Trash Button */}
                     <button
-                      className="text-red-500 hover:text-red-700 transition duration-200 flex items-center justify-center w-10 h-10"
+                      className="text-red-500 hover:text-red-700 transition duration-200 flex items-center justify-center w-10 h-10 mt-2 md:mt-0 md:ml-4"
                       onClick={() => handleRemoveDish(item)}
                     >
                       <FiTrash2 size={22} />
@@ -163,18 +168,35 @@ const Cart = ({
                 </div>
               ))}
 
-              {/* Total Price */}
-              <div className="text-right font-semibold text-lg md:text-xl text-gray-700 border-t border-gray-200 p-4 mt-4">
-                Total: ₹{totalPrice.toFixed(2)}
+              {/* Total Price Section with Pay After Service Checkbox */}
+              <div className="flex justify-between items-center border-t border-gray-200 p-4 mt-4">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="payAfterService"
+                    checked={payAfterService}
+                    onChange={() => setPayAfterService(!payAfterService)}
+                    className="cursor-pointer form-checkbox h-5 w-5 text-green-500 rounded"
+                  />
+                  <label
+                    htmlFor="payAfterService"
+                    className="text-gray-700 font-medium cursor-pointer"
+                  >
+                    Pay After Service
+                  </label>
+                </div>
+                <p className="font-semibold text-lg md:text-xl text-gray-700">
+                  Total: ₹{totalPrice.toFixed(2)}
+                </p>
               </div>
             </div>
           )}
         </Modal.Body>
 
-        <Modal.Footer className="bg-gray-100 flex justify-between items-center py-4 px-4 rounded-b-2xl">
+        <Modal.Footer className="bg-gray-100 flex justify-between items-center py-4 px-4 rounded-b-2xl sticky bottom-0">
           <Button
             gradientMonochrome="green"
-            onClick={handlePayment} // Call handlePayment function on click
+            onClick={handlePayment}
             disabled={order.length === 0}
             className="py-2 px-4 text-sm md:text-base"
           >
