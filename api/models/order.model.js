@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 // Import the Menu model
-import Menu from "./menu.model.js"; // Adjust the path as necessary
+import Menu from "./menu.model.js";
 
 const orderSchema = new mongoose.Schema({
   dishes: [
@@ -28,7 +28,14 @@ const orderSchema = new mongoose.Schema({
     default: "Pending",
   },
   createdAt: { type: Date, default: Date.now },
+  expiresAt: {
+    type: Date,
+    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from creation
+  },
 });
+
+// Set TTL index on expiresAt field
+orderSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // Create a pre-save hook to validate menu items
 orderSchema.pre("save", async function (next) {

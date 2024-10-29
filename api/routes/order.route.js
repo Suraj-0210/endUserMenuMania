@@ -56,7 +56,6 @@ router.get("/orders/restaurant/:restaurantId", async (req, res) => {
   try {
     const orders = await Order.find({
       restaurantId: restaurantId,
-      status: { $ne: "Delivered" },
     }).populate("dishes.menuItem"); // Populate menu item details
 
     if (!orders.length) {
@@ -124,6 +123,32 @@ router.put("/orders/:orderId/status", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to update order status." });
+  }
+});
+
+// Delete Orders by Menu Item ID
+router.delete("/orders/menu/:menuId", async (req, res) => {
+  const { menuId } = req.params;
+
+  try {
+    // Find and delete orders that contain the specified menu item
+    const result = await Order.deleteMany({
+      "dishes.menuItem": menuId,
+    });
+
+    if (result.deletedCount === 0) {
+      return res
+        .status(404)
+        .json({ message: "No orders found with this menu item." });
+    }
+
+    res.status(200).json({
+      message: "Orders with the specified menu item deleted successfully.",
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to delete orders." });
   }
 });
 
