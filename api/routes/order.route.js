@@ -84,19 +84,42 @@ router.get("/orders/restaurant/:restaurantId", async (req, res) => {
 /// Get All Orders for Customer with Session ID
 router.get("/orders/:sessionid", async (req, res) => {
   const sessionId = req.params.sessionid;
+
+  // Set headers for SSE
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+
   try {
-    const orders = await Order.find({ sessionId: sessionId }).populate(
-      "dishes.menuItem"
-    ); // Populate menu item details
+    // Function to send updates to the client
+    const sendUpdate = async () => {
+      const orders = await Order.find({ sessionId: sessionId }).populate(
+        "dishes.menuItem"
+      );
 
-    if (!orders.length) {
-      return res.status(404).json({ message: "No orders found." });
-    }
+      // Stream the data in SSE format
+      res.write(`data: ${JSON.stringify(orders)}\n\n`);
+    };
 
-    res.status(200).json(orders);
+    // Send the initial order data
+    await sendUpdate();
+
+    // Poll for updates at intervals (e.g., every 5 seconds)
+    const interval = setInterval(async () => {
+      await sendUpdate();
+    }, 5000);
+
+    // Cleanup when the client closes the connection
+    req.on("close", () => {
+      clearInterval(interval); // Stop the interval
+      res.end(); // End the SSE response
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Failed to retrieve orders" });
+    console.error("Error in SSE route:", error);
+
+    // Send the error in SSE format
+    res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+    res.end(); // Close the connection
   }
 });
 

@@ -6,6 +6,10 @@ import Cart from "./components/Cart";
 import Footer from "./components/Footer";
 
 const App = () => {
+  const baseURL =
+    import.meta.env.VITE_API_BASE_URL ||
+    "https://endusermenumania.onrender.com";
+
   const [restaurantId, setRestaurantId] = useState(null);
   const [tableNumber, setTableNumber] = useState(null);
   const [showCart, setShowCart] = useState(false);
@@ -29,20 +33,18 @@ const App = () => {
 
   async function fetchPaidOrders() {
     try {
-      const resPaidOrders = await fetch(
-        `https://endusermenumania.onrender.com/api/orders/${sessionId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const eventSource = new EventSource(`${baseURL}/api/orders/${sessionId}`);
 
-      if (resPaidOrders.ok) {
-        const result = await resPaidOrders.json();
-        setPaidOrders(result);
-      }
+      eventSource.onmessage = (event) => {
+        const orders = JSON.parse(event.data);
+        console.log("Received updated orders:", orders);
+        setPaidOrders(orders); // Update the UI with the latest order data
+      };
+
+      eventSource.onerror = (error) => {
+        console.error("Error in SSE connection:", error);
+        eventSource.close(); // Close the connection on error
+      };
     } catch (error) {
       console.log(error);
     }
@@ -98,25 +100,22 @@ const App = () => {
         quantity: order.quantity,
       }));
 
-      const response = await fetch(
-        "https://endusermenumania.onrender.com/api/orders",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            dishes,
-            restaurantId,
-            tableNo: tableNumber,
-            sessionId,
-            paymentId,
-            status: "Completed",
-          }),
-        }
-      );
+      const response = await fetch(`${baseURL}/api/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dishes,
+          restaurantId,
+          tableNo: tableNumber,
+          sessionId,
+          paymentId,
+          status: "Completed",
+        }),
+      });
 
-      await fetch(`https://endusermenumania.onrender.com/api/dish/order`, {
+      await fetch(`${baseURL}/api/dish/order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -126,15 +125,12 @@ const App = () => {
         }),
       });
 
-      const resPaidOrders = await fetch(
-        `https://endusermenumania.onrender.com/api/orders/${sessionId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const resPaidOrders = await fetch(`${baseURL}/api/orders/${sessionId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       if (resPaidOrders.ok) {
         const result = await resPaidOrders.json();
