@@ -36,9 +36,16 @@ const App = () => {
       const eventSource = new EventSource(`${baseURL}/api/orders/${sessionId}`);
 
       eventSource.onmessage = (event) => {
-        const orders = JSON.parse(event.data);
-        console.log("Received updated orders:", orders);
-        setPaidOrders(orders); // Update the UI with the latest order data
+        const updatedOrders = JSON.parse(event.data);
+
+        setPaidOrders((prevOrders) => {
+          return prevOrders.map((order) => {
+            const updatedOrder = updatedOrders.find((o) => o._id === order._id);
+            return updatedOrder
+              ? { ...order, status: updatedOrder.status }
+              : order;
+          });
+        });
       };
 
       eventSource.onerror = (error) => {
