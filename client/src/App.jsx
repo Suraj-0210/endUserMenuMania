@@ -31,21 +31,33 @@ const App = () => {
 
   const sessionId = getCookie("sessionId");
 
+  const [isFirstUpdate, setIsFirstUpdate] = useState(true);
+
   async function fetchPaidOrders() {
     try {
       const eventSource = new EventSource(`${baseURL}/api/orders/${sessionId}`);
 
       eventSource.onmessage = (event) => {
-        const updatedOrders = JSON.parse(event.data);
+        const orders = JSON.parse(event.data);
+        console.log("Received updated orders:", orders);
 
-        setPaidOrders((prevOrders) => {
-          return prevOrders.map((order) => {
-            const updatedOrder = updatedOrders.find((o) => o._id === order._id);
-            return updatedOrder
-              ? { ...order, status: updatedOrder.status }
-              : order;
+        if (isFirstUpdate) {
+          // Set the full orders list on the first response
+          setPaidOrders(orders);
+          setIsFirstUpdate(false); // Mark as not the first update
+        } else {
+          // Update only the status for subsequent updates
+          setPaidOrders((prevOrders) => {
+            return prevOrders.map((order) => {
+              const updatedOrder = updatedOrders.find(
+                (o) => o._id === order._id
+              );
+              return updatedOrder
+                ? { ...order, status: updatedOrder.status }
+                : order;
+            });
           });
-        });
+        }
       };
 
       eventSource.onerror = (error) => {
