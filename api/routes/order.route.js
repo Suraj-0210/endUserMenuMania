@@ -114,35 +114,36 @@ router.get("/orders/:sessionid", async (req, res) => {
   res.setHeader("Connection", "keep-alive");
 
   try {
-    // Function to send updates to the client
+    // Function to send updated orders
     const sendUpdate = async () => {
-      const orders = await Order.find({ sessionId: sessionId }).populate(
+      const orders = await Order.find({ sessionId }).populate(
         "dishes.menuItem"
       );
-
-      // Stream the data in SSE format
       res.write(`data: ${JSON.stringify(orders)}\n\n`);
     };
 
-    // Send the initial order data
+    // Send initial data
     await sendUpdate();
 
-    // Poll for updates at intervals (e.g., every 5 seconds)
-    const interval = setInterval(async () => {
-      await sendUpdate();
-    }, 5000);
+    // Use MongoDB Change Stream to listen for real-time updates
+    const changeStream = Order.watch([
+      { $match: { "fullDocument.sessionId": sessionId } },
+    ]);
 
-    // Cleanup when the client closes the connection
+    // Send updates when a change occurs
+    changeStream.on("change", async () => {
+      await sendUpdate();
+    });
+
+    // Cleanup when client disconnects
     req.on("close", () => {
-      clearInterval(interval); // Stop the interval
-      res.end(); // End the SSE response
+      changeStream.close(); // Close MongoDB Change Stream
+      res.end(); // End the response
     });
   } catch (error) {
     console.error("Error in SSE route:", error);
-
-    // Send the error in SSE format
     res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
-    res.end(); // Close the connection
+    res.end();
   }
 });
 
