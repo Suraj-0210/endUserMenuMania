@@ -6,7 +6,9 @@ import Cart from "./components/Cart";
 import Footer from "./components/Footer";
 
 const App = () => {
-  const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+  const baseURL =
+    import.meta.env.VITE_API_BASE_URL ||
+    "https://endusermenumania.onrender.com";
 
   const [restaurantId, setRestaurantId] = useState(null);
   const [tableNumber, setTableNumber] = useState(null);
