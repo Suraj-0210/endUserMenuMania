@@ -6,9 +6,7 @@ import Cart from "./components/Cart";
 import Footer from "./components/Footer";
 
 const App = () => {
-  const baseURL =
-    import.meta.env.VITE_API_BASE_URL ||
-    "https://endusermenumania.onrender.com";
+  const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
   const [restaurantId, setRestaurantId] = useState(null);
   const [tableNumber, setTableNumber] = useState(null);
@@ -49,9 +47,7 @@ const App = () => {
           // Update only the status for subsequent updates
           setPaidOrders((prevOrders) => {
             return prevOrders.map((order) => {
-              const updatedOrder = updatedOrders.find(
-                (o) => o._id === order._id
-              );
+              const updatedOrder = paidOrders.find((o) => o._id === order._id);
               return updatedOrder
                 ? { ...order, status: updatedOrder.status }
                 : order;
@@ -94,8 +90,8 @@ const App = () => {
     setShowCart((prev) => !prev);
   };
   const toggleShowOrders = () => {
-    setShowOrders((prev) => !prev);
-    if (showOrders) {
+    setShowOrders((prev) => (prev = !prev));
+    if (showOrders === false) {
       fetchPaidOrders();
     }
   };

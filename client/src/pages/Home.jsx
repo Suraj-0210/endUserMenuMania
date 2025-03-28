@@ -137,7 +137,7 @@ function HomePage({
 
   return (
     <>
-      {showOrders ? (
+      {showOrders === true ? (
         <Orders confirmedOrders={confirmedOrders} paidOrders={paidOrders} />
       ) : (
         <div>

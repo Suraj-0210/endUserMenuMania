@@ -125,16 +125,31 @@ router.get("/orders/:sessionid", async (req, res) => {
     // Send initial data
     await sendUpdate();
 
-    // Use MongoDB Change Stream to listen for real-time updates
-    const changeStream = Order.watch([
-      { $match: { "fullDocument.sessionId": sessionId } },
-    ]);
+    const changeStream = Order.watch();
 
-    // Send updates when a change occurs
-    changeStream.on("change", async () => {
-      await sendUpdate();
+    // Debug: Log when Change Stream is ready
+    console.log("Change Stream initialized...");
+
+    // Listen for all changes
+    changeStream.on("change", (change) => {
+      console.log("Received change event:", JSON.stringify(change, null, 2));
+
+      if (
+        change.operationType === "update" &&
+        change.updateDescription.updatedFields.status
+      ) {
+        console.log(
+          `Order ${change.documentKey._id} status updated to:`,
+          change.updateDescription.updatedFields.status
+        );
+        sendUpdate();
+      }
     });
 
+    // Error handling
+    changeStream.on("error", (err) => {
+      console.error("Change Stream Error:", err);
+    });
     // Cleanup when client disconnects
     req.on("close", () => {
       changeStream.close(); // Close MongoDB Change Stream
