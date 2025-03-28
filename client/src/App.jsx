@@ -40,21 +40,26 @@ const App = () => {
       eventSource.onmessage = (event) => {
         const orders = JSON.parse(event.data);
         console.log("Received updated orders:", orders);
-
-        if (isFirstUpdate) {
-          // Set the full orders list on the first response
-          setPaidOrders(orders);
-          setIsFirstUpdate(false); // Mark as not the first update
-        } else {
-          // Update only the status for subsequent updates
-          setPaidOrders((prevOrders) => {
-            return prevOrders.map((order) => {
-              const updatedOrder = paidOrders.find((o) => o._id === order._id);
-              return updatedOrder
-                ? { ...order, status: updatedOrder.status }
-                : order;
+        if (orders.some((order) => order.status !== "Delivered")) {
+          if (isFirstUpdate) {
+            // Set the full orders list on the first response
+            setPaidOrders(orders);
+            setIsFirstUpdate(false); // Mark as not the first update
+          } else {
+            // Update only the status for subsequent updates
+            setPaidOrders((prevOrders) => {
+              return prevOrders.map((order) => {
+                const updatedOrder = paidOrders.find(
+                  (o) => o._id === order._id
+                );
+                return updatedOrder
+                  ? { ...order, status: updatedOrder.status }
+                  : order;
+              });
             });
-          });
+          }
+        } else {
+          eventSource.close();
         }
       };
 
