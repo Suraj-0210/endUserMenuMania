@@ -33,6 +33,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5102",
+      "http://localhost:4200",
       "http://localhost:5173",
       "https://endusermenumania-1.onrender.com",
       "https://menumania.vercel.app",
