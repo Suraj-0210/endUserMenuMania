@@ -6,8 +6,15 @@ const router = express.Router();
 // Place an Order
 router.post("/orders", async (req, res) => {
   try {
-    const { dishes, tableNo, restaurantId, sessionId, paymentId, status } =
-      req.body;
+    const {
+      dishes,
+      tableNo,
+      restaurantId,
+      sessionId,
+      paymentId,
+      status,
+      message,
+    } = req.body;
 
     // Create a new order
     const newOrder = new Order({
@@ -20,6 +27,7 @@ router.post("/orders", async (req, res) => {
       sessionId,
       paymentId,
       status,
+      message,
     });
 
     await newOrder.save();
@@ -76,6 +84,7 @@ router.get("/orders/restaurant/:restaurantId", async (req, res) => {
         SessionId: order.sessionId,
         PaymentId: order.paymentId,
         Status: order.status,
+        Message: order.message,
       }));
 
       // Stream the data in SSE format

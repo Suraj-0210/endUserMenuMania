@@ -27,6 +27,10 @@ const orderSchema = new mongoose.Schema({
     enum: ["Pending", "Confirmed", "In Progress", "Completed"],
     default: "Pending",
   },
+  message: {
+    type: String,
+    default: "", // Optional, but you can set default to empty string
+  },
   createdAt: { type: Date, default: Date.now },
   expiresAt: {
     type: Date,
