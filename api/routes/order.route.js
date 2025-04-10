@@ -42,7 +42,7 @@ router.post("/orders", async (req, res) => {
 
 // orderRoutes.js
 
-/// Get All Orders for Admin
+// Get All Orders for Admin
 router.get("/orders", async (req, res) => {
   try {
     const orders = await Order.find().populate("dishes.menuItem"); // Populate menu item details
@@ -113,7 +113,7 @@ router.get("/orders/restaurant/:restaurantId", async (req, res) => {
   }
 });
 
-/// Get All Orders for Customer with Session ID
+// Get All Orders for Customer with Session ID
 router.get("/orders/:sessionid", async (req, res) => {
   const sessionId = req.params.sessionid;
 
@@ -220,6 +220,70 @@ router.delete("/orders/menu/:menuId", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to delete orders." });
+  }
+});
+
+// Checkout Route - returns a checkout success message and session QR code
+router.get("/checkout/:sessionId", async (req, res) => {
+  const { sessionId } = req.params;
+
+  try {
+    const orders = await Order.find({ sessionId }).populate("dishes.menuItem");
+
+    if (!orders.length) {
+      return res
+        .status(404)
+        .json({ message: "No orders found for this session." });
+    }
+
+    const tableNo = orders[0].tableNo;
+
+    let totalAmount = 0;
+    let paidOnline = 0;
+
+    const formattedOrders = orders.map((order) => {
+      let orderAmount = 0;
+
+      const items = order.dishes.map((dish) => {
+        const price = dish.menuItem.price;
+        const quantity = dish.quantity;
+        orderAmount += price * quantity;
+
+        return {
+          Name: dish.menuItem.name,
+          Quantity: quantity,
+          Price: price,
+          Total: price * quantity,
+        };
+      });
+
+      totalAmount += orderAmount;
+
+      if (order.paymentId !== "Pay_After_Service") {
+        paidOnline += orderAmount;
+      }
+
+      return {
+        OrderId: order._id,
+        Items: items,
+        PaymentId: order.paymentId,
+        Status: order.status,
+        orderDateTime: order.createdAt, // 👈 Added this line
+      };
+    });
+
+    res.status(200).json({
+      message: "Please show the QR at reception.",
+      sessionId,
+      tableNo,
+      totalAmount,
+      paidOnline,
+      remainingAmount: totalAmount - paidOnline,
+      orders: formattedOrders,
+    });
+  } catch (error) {
+    console.error("Checkout error:", error);
+    res.status(500).json({ message: "Checkout failed." });
   }
 });
 
