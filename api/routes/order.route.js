@@ -3,7 +3,8 @@ import Order from "../models/order.model.js";
 
 const router = express.Router();
 
-// Place an Order
+import Menu from "../models/menu.model.js"; // Make sure this import is correct
+
 router.post("/orders", async (req, res) => {
   try {
     const {
@@ -16,10 +17,23 @@ router.post("/orders", async (req, res) => {
       message,
     } = req.body;
 
-    // Create a new order
+    // Step 1: Validate stock
+    for (let dish of dishes) {
+      const menuItem = await Menu.findById(dish.menuItem);
+      if (!menuItem) {
+        return res.status(404).json({ message: `Menu item not found.` });
+      }
+      if (menuItem.stock < dish.quantity) {
+        return res.status(400).json({
+          message: `Not enough stock for "${menuItem.name}". Available: ${menuItem.stock}, Requested: ${dish.quantity}`,
+        });
+      }
+    }
+
+    // Step 2: Create the order
     const newOrder = new Order({
       dishes: dishes.map((dish) => ({
-        menuItem: dish.menuItem, // This should be the ObjectId of the Menu item
+        menuItem: dish.menuItem,
         quantity: dish.quantity,
       })),
       restaurantId,
@@ -31,11 +45,21 @@ router.post("/orders", async (req, res) => {
     });
 
     await newOrder.save();
+
+    // Step 3: Decrease stock
+    for (let dish of dishes) {
+      await Menu.findByIdAndUpdate(
+        dish.menuItem,
+        { $inc: { stock: -dish.quantity } },
+        { new: true }
+      );
+    }
+
     res
       .status(201)
       .json({ message: "Order placed successfully", orderId: newOrder._id });
   } catch (error) {
-    console.error(error);
+    console.error("Order placement error:", error);
     res.status(500).json({ message: "Failed to place order" });
   }
 });
