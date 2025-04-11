@@ -7,8 +7,13 @@ const sessionSchema = new mongoose.Schema({
     unique: true,
   },
   tableNo: {
-    type: Number, // or String if table numbers are alphanumeric like "A5"
-    required: true, // optional initially
+    type: Number,
+    required: true,
+  },
+  restaurantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
   },
   createdAt: {
     type: Date,

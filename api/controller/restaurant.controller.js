@@ -19,7 +19,7 @@ export const getRestaurant = async (req, res) => {
 
     // ✅ STEP 1: Try finding an active session by tableNo
     if (tableNo) {
-      session = await Session.findOne({ tableNo });
+      session = await Session.findOne({ tableNo, restaurantId });
 
       if (session) {
         console.log("Found existing session for table:", session.sessionId);
@@ -29,7 +29,7 @@ export const getRestaurant = async (req, res) => {
 
     // ✅ STEP 2: If session not found by tableNo, fallback to sessionId in cookie
     if (!session && sessionId) {
-      session = await Session.findOne({ sessionId });
+      session = await Session.findOne({ sessionId, restaurantId });
 
       if (!session) {
         console.log("SessionId from cookie not found in DB. Creating new.");
@@ -39,7 +39,7 @@ export const getRestaurant = async (req, res) => {
           "SessionId found but tableNo mismatch. Creating new session."
         );
         sessionId = uuidv4();
-        session = new Session({ sessionId, tableNo });
+        session = new Session({ sessionId, tableNo, restaurantId });
         await session.save();
       } else {
         console.log("Valid session from cookie:", sessionId);
@@ -49,7 +49,7 @@ export const getRestaurant = async (req, res) => {
     // ✅ STEP 3: If still no session found, create a new one
     if (!session) {
       sessionId = uuidv4();
-      const newSession = new Session({ sessionId, tableNo });
+      const newSession = new Session({ sessionId, tableNo, restaurantId });
       await newSession.save();
       console.log("New session created:", sessionId);
     }
