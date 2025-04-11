@@ -89,7 +89,6 @@ export const getRestaurant = async (req, res) => {
 };
 
 // controllers/restaurantController.js
-import Restaurant from "../models/restaurant.model.js";
 
 export const getRestaurantIdByUserId = async (req, res) => {
   try {
