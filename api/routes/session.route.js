@@ -3,7 +3,6 @@ import {
   createSession,
   checkSession,
   expireSession,
-  getTableStatus,
   streamTableStatus,
 } from "../controller/session.controller.js";
 
