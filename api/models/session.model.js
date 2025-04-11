@@ -6,10 +6,14 @@ const sessionSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  tableNo: {
+    type: Number, // or String if table numbers are alphanumeric like "A5"
+    required: true, // optional initially
+  },
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: "45m", // Automatically remove the document after 45 minutes
+    expires: 5400, // 1.5 hours = 90 minutes = 5400 seconds
   },
 });
 

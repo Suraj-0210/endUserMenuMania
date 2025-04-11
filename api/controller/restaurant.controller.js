@@ -8,73 +8,63 @@ export const testRestaurant = async (req, res) => {
 
 export const getRestaurant = async (req, res) => {
   const restaurantId = req.params.restaurantid;
-  const tableNo = req.query.tableNo;
-  console.log("Table No:", tableNo);
+  const tableNo = req.query.tableNo ? Number(req.query.tableNo) : null;
+  console.log("Table No:", tableNo, typeof tableNo); // for debugging
 
-  console.log("Received cookies:", req.cookies.sessionId);
+  let sessionId = req.cookies.sessionId;
+  console.log("Received sessionId cookie:", sessionId);
 
   try {
-    // Check for existing sessionId in cookies
-    let sessionId = req.cookies.sessionId;
-    console.log("The user SessionID: " + sessionId);
+    let session;
 
-    if (sessionId === undefined || sessionId === null || sessionId === "") {
-      console.log("User hasn't sessionId");
-      try {
-        // Generate a new session ID
-        const newsessionId = uuidv4();
-        console.log("New SessionId Generated:");
+    // ✅ STEP 1: Try finding an active session by tableNo
+    if (tableNo) {
+      session = await Session.findOne({ tableNo });
 
-        // Create a new session document
-        const newSession = new Session({ sessionId: newsessionId });
-        const newsessionObj = await newSession.save();
-
-        sessionId = newsessionObj.sessionId;
-      } catch (error) {
-        console.error("Error creating session:", error);
-      }
-    } else {
-      console.log("User has SessionId ");
-      try {
-        // Check if the session ID exists in the database
-        const session = await Session.findOne({ sessionId });
-
-        if (session === undefined || session === null || session === "") {
-          console.log("User's SessionId is not valid");
-          try {
-            // Generate a new session ID
-            sessionId = uuidv4();
-
-            // Create a new session document
-            const newSession = new Session({ sessionId });
-            const newsessionObj = await newSession.save();
-            sessionId = newsessionObj.sessionId;
-          } catch (error) {
-            console.error("Error creating session:", error);
-          }
-        }
-
-        // If found, return the valid session information
-      } catch (error) {
-        console.error("Error checking session:", error);
+      if (session) {
+        console.log("Found existing session for table:", session.sessionId);
+        sessionId = session.sessionId;
       }
     }
 
-    const restaurant = await Restaurant.findById(restaurantId);
+    // ✅ STEP 2: If session not found by tableNo, fallback to sessionId in cookie
+    if (!session) {
+      if (sessionId) {
+        session = await Session.findOne({ sessionId });
 
+        if (!session) {
+          console.log("SessionId from cookie not found in DB. Creating new.");
+          sessionId = null;
+        } else {
+          console.log("Valid session from cookie:", sessionId);
+        }
+      }
+    }
+
+    // ✅ STEP 3: If still no session found, create a new one
+    if (!session) {
+      sessionId = uuidv4();
+      const newSession = new Session({ sessionId, tableNo });
+      await newSession.save();
+      console.log("New session created:", sessionId);
+    }
+
+    // ✅ STEP 4: Fetch restaurant details
+    const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
 
     const { restaurantname, address, logo } = restaurant._doc;
 
-    // Send response with restaurant details and sessionId
+    // ✅ STEP 5: Send response with session cookie
     res
       .status(200)
       .cookie("sessionId", sessionId, {
         httpOnly: false,
         sameSite: "None",
         secure: true,
+        maxAge: 90 * 60 * 1000, // 1.5 hours
       })
       .json({
         restaurantname,
@@ -83,7 +73,7 @@ export const getRestaurant = async (req, res) => {
         sessionId,
       });
   } catch (error) {
-    console.error(error);
+    console.error("Error in getRestaurant:", error);
     res
       .status(500)
       .json({ message: "An error occurred while fetching restaurant details" });
