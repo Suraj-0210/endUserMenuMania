@@ -28,16 +28,21 @@ export const getRestaurant = async (req, res) => {
     }
 
     // ✅ STEP 2: If session not found by tableNo, fallback to sessionId in cookie
-    if (!session) {
-      if (sessionId) {
-        session = await Session.findOne({ sessionId });
+    if (!session && sessionId) {
+      session = await Session.findOne({ sessionId });
 
-        if (!session) {
-          console.log("SessionId from cookie not found in DB. Creating new.");
-          sessionId = null;
-        } else {
-          console.log("Valid session from cookie:", sessionId);
-        }
+      if (!session) {
+        console.log("SessionId from cookie not found in DB. Creating new.");
+        sessionId = null;
+      } else if (tableNo !== null && session.tableNo !== tableNo) {
+        console.log(
+          "SessionId found but tableNo mismatch. Creating new session."
+        );
+        sessionId = uuidv4();
+        session = new Session({ sessionId, tableNo });
+        await session.save();
+      } else {
+        console.log("Valid session from cookie:", sessionId);
       }
     }
 
