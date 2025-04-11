@@ -62,13 +62,12 @@ router.get("/orders", async (req, res) => {
 router.get("/orders/restaurant/:restaurantId", async (req, res) => {
   const restaurantId = req.params.restaurantId;
 
-  // Set headers for SSE
+  // Set SSE headers
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
   try {
-    // Function to send updates to the client
     const sendUpdate = async () => {
       const orders = await Order.find({ restaurantId }).populate(
         "dishes.menuItem"
@@ -87,29 +86,48 @@ router.get("/orders/restaurant/:restaurantId", async (req, res) => {
         Message: order.message,
       }));
 
-      // Stream the data in SSE format
       res.write(`data: ${JSON.stringify(formattedOrders)}\n\n`);
     };
 
-    // Send the initial order data
+    // Send initial data
     await sendUpdate();
 
-    // Poll for updates at intervals (e.g., every 5 seconds)
-    const interval = setInterval(async () => {
-      await sendUpdate();
-    }, 5000);
+    // Start Change Stream
+    const changeStream = Order.watch();
 
-    // Cleanup when the client closes the connection
+    console.log("Change Stream for restaurant orders initialized...");
+
+    changeStream.on("change", async (change) => {
+      console.log("Change detected:", change);
+
+      const affectedDocId = change.documentKey?._id;
+
+      // Check if the change affects the orders for this restaurant
+      if (affectedDocId) {
+        const updatedOrder = await Order.findById(affectedDocId);
+
+        if (
+          updatedOrder &&
+          updatedOrder.restaurantId.toString() === restaurantId
+        ) {
+          await sendUpdate();
+        }
+      }
+    });
+
+    changeStream.on("error", (err) => {
+      console.error("Change Stream error:", err);
+    });
+
     req.on("close", () => {
-      clearInterval(interval); // Stop the interval
-      res.end(); // End the SSE response
+      console.log("Client closed connection, cleaning up...");
+      changeStream.close();
+      res.end();
     });
   } catch (error) {
     console.error("Error in SSE route:", error);
-
-    // Send the error in SSE format
     res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
-    res.end(); // Close the connection
+    res.end();
   }
 });
 
