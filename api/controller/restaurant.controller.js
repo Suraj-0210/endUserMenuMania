@@ -87,3 +87,29 @@ export const getRestaurant = async (req, res) => {
       .json({ message: "An error occurred while fetching restaurant details" });
   }
 };
+
+// controllers/restaurantController.js
+import Restaurant from "../models/restaurant.model.js";
+
+export const getRestaurantIdByUserId = async (req, res) => {
+  try {
+    const userId = req.body.user_id || req.query.user_id || req.user?.id;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required." });
+    }
+
+    const restaurant = await Restaurant.findOne({ user_id: userId });
+
+    if (!restaurant) {
+      return res
+        .status(404)
+        .json({ message: "Restaurant not found for this user." });
+    }
+
+    return res.status(200).json({ restaurantId: restaurant._id });
+  } catch (error) {
+    console.error("Error fetching restaurant ID:", error);
+    return res.status(500).json({ message: "Server error." });
+  }
+};
