@@ -46,13 +46,14 @@ export const expireSession = async (req, res) => {
   }
 
   try {
-    const result = await Session.deleteOne({ sessionId });
+    const session = await Session.findOneAndDelete({ sessionId });
 
-    if (result.deletedCount === 0) {
+    if (!session) {
       return res.status(404).json({ message: "Session not found" });
     }
 
-    res.clearCookie("sessionId"); // Optional: clear the session cookie
+    await broadcastTableStatus(session.restaurantId);
+    res.clearCookie("sessionId");
     res.status(200).json({ message: "Session expired successfully" });
   } catch (error) {
     console.error("Error expiring session:", error);
@@ -60,31 +61,129 @@ export const expireSession = async (req, res) => {
   }
 };
 
-export const getTableStatus = async (req, res) => {
+// export const getTableStatus = async (req, res) => {
+//   const { restaurantId } = req.params;
+
+//   try {
+//     const restaurant = await Restaurant.findById(restaurantId);
+//     if (!restaurant) {
+//       return res.status(404).json({ message: "Restaurant not found" });
+//     }
+
+//     const totalTables = restaurant.tables;
+
+//     // Get all active sessions for this restaurant
+//     const activeSessions = await Session.find({ restaurantId });
+
+//     const bookedTables = activeSessions.map((s) => s.tableNo);
+//     const allTables = Array.from({ length: totalTables }, (_, i) => i + 1);
+//     const availableTables = allTables.filter((t) => !bookedTables.includes(t));
+
+//     res.status(200).json({
+//       totalTables,
+//       bookedTables,
+//       availableTables,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching table status:", error);
+//     res.status(500).json({ message: "Failed to fetch table status" });
+//   }
+// };
+
+// Store connections per restaurantId
+const sseClients = {};
+
+export const streamTableStatus = async (req, res) => {
   const { restaurantId } = req.params;
 
-  try {
-    const restaurant = await Restaurant.findById(restaurantId);
-    if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
+  // Set headers for SSE
+  res.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+  res.flushHeaders();
+
+  // Send initial data
+  const sendTableStatus = async () => {
+    try {
+      const restaurant = await Restaurant.findById(restaurantId);
+      if (!restaurant) {
+        res.write(
+          `event: error\ndata: ${JSON.stringify({
+            message: "Restaurant not found",
+          })}\n\n`
+        );
+        return;
+      }
+
+      const totalTables = restaurant.tables;
+      const activeSessions = await Session.find({ restaurantId });
+      const bookedTables = activeSessions.map((s) => s.tableNo);
+      const allTables = Array.from({ length: totalTables }, (_, i) => i + 1);
+      const availableTables = allTables.filter(
+        (t) => !bookedTables.includes(t)
+      );
+
+      const payload = {
+        totalTables,
+        bookedTables,
+        availableTables,
+      };
+
+      res.write(`event: tableStatus\ndata: ${JSON.stringify(payload)}\n\n`);
+    } catch (error) {
+      console.error("SSE send error:", error);
+      res.write(
+        `event: error\ndata: ${JSON.stringify({
+          message: "Internal Server Error",
+        })}\n\n`
+      );
     }
+  };
 
-    const totalTables = restaurant.tables;
+  // Add to client pool
+  if (!sseClients[restaurantId]) {
+    sseClients[restaurantId] = [];
+  }
+  sseClients[restaurantId].push(res);
 
-    // Get all active sessions for this restaurant
-    const activeSessions = await Session.find({ restaurantId });
+  // Send initial state
+  await sendTableStatus();
 
-    const bookedTables = activeSessions.map((s) => s.tableNo);
-    const allTables = Array.from({ length: totalTables }, (_, i) => i + 1);
-    const availableTables = allTables.filter((t) => !bookedTables.includes(t));
+  // Remove client on disconnect
+  req.on("close", () => {
+    sseClients[restaurantId] = sseClients[restaurantId].filter(
+      (client) => client !== res
+    );
+  });
+};
 
-    res.status(200).json({
-      totalTables,
-      bookedTables,
-      availableTables,
-    });
-  } catch (error) {
-    console.error("Error fetching table status:", error);
-    res.status(500).json({ message: "Failed to fetch table status" });
+export const broadcastTableStatus = async (restaurantId) => {
+  if (!sseClients[restaurantId]) return;
+
+  const restaurant = await Restaurant.findById(restaurantId);
+  if (!restaurant) return;
+
+  const totalTables = restaurant.tables;
+  const activeSessions = await Session.find({ restaurantId });
+
+  const bookedTables = activeSessions.map((s) => ({
+    tableNo: s.tableNo,
+    bookedAt: s.createdAt, // use Mongoose timestamp
+  }));
+
+  const bookedTableNos = bookedTables.map((t) => t.tableNo);
+  const allTables = Array.from({ length: totalTables }, (_, i) => i + 1);
+  const availableTables = allTables.filter((t) => !bookedTableNos.includes(t));
+
+  const payload = {
+    totalTables,
+    bookedTables, // contains tableNo + createdAt (renamed as bookedAt)
+    availableTables, // list of free table numbers
+  };
+
+  for (const client of sseClients[restaurantId]) {
+    client.write(`event: tableStatus\ndata: ${JSON.stringify(payload)}\n\n`);
   }
 };

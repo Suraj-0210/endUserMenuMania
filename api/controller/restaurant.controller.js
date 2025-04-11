@@ -1,6 +1,7 @@
 import Restaurant from "../models/restaurant.model.js";
 import { v4 as uuidv4 } from "uuid"; // Import UUID for generating session IDs
 import Session from "../models/session.model.js";
+import { broadcastTableStatus } from "./session.controller.js";
 
 export const testRestaurant = async (req, res) => {
   res.json({ Success: "Restaurant Controller working successfully" });
@@ -41,6 +42,7 @@ export const getRestaurant = async (req, res) => {
         sessionId = uuidv4();
         session = new Session({ sessionId, tableNo, restaurantId });
         await session.save();
+        await broadcastTableStatus(session.restaurantId);
       } else {
         console.log("Valid session from cookie:", sessionId);
       }
@@ -51,6 +53,7 @@ export const getRestaurant = async (req, res) => {
       sessionId = uuidv4();
       const newSession = new Session({ sessionId, tableNo, restaurantId });
       await newSession.save();
+      await broadcastTableStatus(session.restaurantId);
       console.log("New session created:", sessionId);
     }
 
