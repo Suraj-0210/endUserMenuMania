@@ -249,9 +249,7 @@ router.get("/checkout/:sessionId", async (req, res) => {
     const orders = await Order.find({ sessionId }).populate("dishes.menuItem");
 
     if (!orders.length) {
-      return res
-        .status(404)
-        .json({ message: "No orders found for this session." });
+      return res.status(404).json({ message: "User hasn't Ordered anything." });
     }
 
     const tableNo = orders[0].tableNo;
@@ -291,7 +289,8 @@ router.get("/checkout/:sessionId", async (req, res) => {
     });
 
     res.status(200).json({
-      message: "Please show the QR at reception.",
+      message:
+        "Please scan the qr code and only collect the amount that in cash.",
       sessionId,
       tableNo,
       totalAmount,
