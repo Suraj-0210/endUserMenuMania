@@ -1,3 +1,4 @@
+import Restaurant from "../models/restaurant.model.js";
 import Session from "../models/session.model.js";
 import { v4 as uuidv4 } from "uuid"; // For generating session IDs
 
@@ -56,5 +57,34 @@ export const expireSession = async (req, res) => {
   } catch (error) {
     console.error("Error expiring session:", error);
     res.status(500).json({ message: "Failed to expire session" });
+  }
+};
+
+export const getTableStatus = async (req, res) => {
+  const { restaurantId } = req.params;
+
+  try {
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+
+    const totalTables = restaurant.tables;
+
+    // Get all active sessions for this restaurant
+    const activeSessions = await Session.find({ restaurantId });
+
+    const bookedTables = activeSessions.map((s) => s.tableNo);
+    const allTables = Array.from({ length: totalTables }, (_, i) => i + 1);
+    const availableTables = allTables.filter((t) => !bookedTables.includes(t));
+
+    res.status(200).json({
+      totalTables,
+      bookedTables,
+      availableTables,
+    });
+  } catch (error) {
+    console.error("Error fetching table status:", error);
+    res.status(500).json({ message: "Failed to fetch table status" });
   }
 };
