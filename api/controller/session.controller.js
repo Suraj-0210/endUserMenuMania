@@ -104,7 +104,7 @@ export const streamTableStatus = async (req, res) => {
   });
   res.flushHeaders();
 
-  // Send initial data
+  // Function to send current table status
   const sendTableStatus = async () => {
     try {
       const restaurant = await Restaurant.findById(restaurantId);
@@ -118,13 +118,24 @@ export const streamTableStatus = async (req, res) => {
       }
 
       const totalTables = restaurant.tables;
+
+      // Get active sessions for the restaurant
       const activeSessions = await Session.find({ restaurantId });
-      const bookedTables = activeSessions.map((s) => s.tableNo);
+
+      // Extract bookedTables as objects with tableNo and bookedAt
+      const bookedTables = activeSessions.map((session) => ({
+        tableNo: session.tableNo,
+        bookedAt: session.createdAt,
+      }));
+
+      // Build array of available table numbers
+      const bookedTableNumbers = bookedTables.map((t) => t.tableNo);
       const allTables = Array.from({ length: totalTables }, (_, i) => i + 1);
       const availableTables = allTables.filter(
-        (t) => !bookedTables.includes(t)
+        (t) => !bookedTableNumbers.includes(t)
       );
 
+      // Payload structure
       const payload = {
         totalTables,
         bookedTables,
@@ -142,13 +153,13 @@ export const streamTableStatus = async (req, res) => {
     }
   };
 
-  // Add to client pool
+  // Register client in pool
   if (!sseClients[restaurantId]) {
     sseClients[restaurantId] = [];
   }
   sseClients[restaurantId].push(res);
 
-  // Send initial state
+  // Initial data send
   await sendTableStatus();
 
   // Remove client on disconnect
