@@ -36,3 +36,25 @@ export const checkSession = async (req, res) => {
     res.status(500).json({ message: "Failed to check session" });
   }
 };
+
+export const expireSession = async (req, res) => {
+  const { sessionId } = req.body;
+
+  if (!sessionId) {
+    return res.status(400).json({ message: "sessionId is required" });
+  }
+
+  try {
+    const result = await Session.deleteOne({ sessionId });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "Session not found" });
+    }
+
+    res.clearCookie("sessionId"); // Optional: clear the session cookie
+    res.status(200).json({ message: "Session expired successfully" });
+  } catch (error) {
+    console.error("Error expiring session:", error);
+    res.status(500).json({ message: "Failed to expire session" });
+  }
+};
