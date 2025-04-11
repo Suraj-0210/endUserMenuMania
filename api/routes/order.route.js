@@ -98,7 +98,7 @@ router.get("/orders/restaurant/:restaurantId", async (req, res) => {
     console.log("Change Stream for restaurant orders initialized...");
 
     changeStream.on("change", async (change) => {
-      console.log("Change detected:", change);
+      // console.log("Change detected:", change);
 
       const affectedDocId = change.documentKey?._id;
 
@@ -159,7 +159,7 @@ router.get("/orders/:sessionid", async (req, res) => {
 
     // Listen for all changes
     changeStream.on("change", (change) => {
-      console.log("Received change event:", JSON.stringify(change, null, 2));
+      // console.log("Received change event:", JSON.stringify(change, null, 2));
 
       if (
         change.operationType === "update" &&
