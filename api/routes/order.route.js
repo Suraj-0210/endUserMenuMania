@@ -155,6 +155,36 @@ router.get("/orders/restaurant/:restaurantId", async (req, res) => {
   }
 });
 
+// Get All Orders for a Restaurant (No SSE)
+router.get("/orders/restaurant/metrices/:restaurantId", async (req, res) => {
+  const restaurantId = req.params.restaurantId;
+
+  try {
+    const orders = await Order.find({ restaurantId }).populate(
+      "dishes.menuItem"
+    );
+
+    const formattedOrders = orders.map((order) => ({
+      OrderId: order._id,
+      Items: order.dishes.map((dish) => ({
+        Name: dish.menuItem.name,
+        Quantity: dish.quantity,
+      })),
+      TableNo: order.tableNo,
+      SessionId: order.sessionId,
+      PaymentId: order.paymentId,
+      Status: order.status,
+      Message: order.message,
+      OrderDate: order.createdAt.toISOString().split("T")[0],
+    }));
+
+    res.status(200).json(formattedOrders);
+  } catch (error) {
+    console.error("❌ Error fetching orders:", error);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
+
 // Get All Orders for Customer with Session ID
 router.get("/orders/:sessionid", async (req, res) => {
   const sessionId = req.params.sessionid;
