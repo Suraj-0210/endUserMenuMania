@@ -93,9 +93,10 @@ router.get("/orders/restaurant/:restaurantId", async (req, res) => {
 
   try {
     const sendUpdate = async () => {
-      const orders = await Order.find({ restaurantId }).populate(
-        "dishes.menuItem"
-      );
+      const orders = await Order.find({
+        restaurantId,
+        isExpired: false,
+      }).populate("dishes.menuItem");
 
       const formattedOrders = orders.map((order) => ({
         OrderId: order._id,
@@ -197,7 +198,7 @@ router.get("/orders/:sessionid", async (req, res) => {
   try {
     // Function to send updated orders
     const sendUpdate = async () => {
-      const orders = await Order.find({ sessionId }).populate(
+      const orders = await Order.find({ sessionId, isExpired: false }).populate(
         "dishes.menuItem"
       );
       res.write(`data: ${JSON.stringify(orders)}\n\n`);
@@ -355,6 +356,19 @@ router.get("/checkout/:sessionId", async (req, res) => {
   } catch (error) {
     console.error("Checkout error:", error);
     res.status(500).json({ message: "Checkout failed." });
+  }
+});
+
+// Expire the orders every two Hours
+router.get("/cron/mark-expired-orders", async (req, res) => {
+  try {
+    const result = await Order.updateMany(
+      { isExpired: false, expiresAt: { $lt: new Date() } },
+      { $set: { isExpired: true } }
+    );
+    res.json({ success: true, updated: result.modifiedCount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

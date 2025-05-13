@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-
-// Import the Menu model
 import Menu from "./menu.model.js";
 
 const orderSchema = new mongoose.Schema({
@@ -10,7 +8,7 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Menu",
         required: true,
-      }, // Reference to Menu model
+      },
       quantity: { type: Number, required: true },
     },
   ],
@@ -20,8 +18,8 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
   tableNo: { type: Number, required: true },
-  sessionId: { type: String, required: true }, // For tracking customer sessions
-  paymentId: { type: String, required: true }, // Payment ID
+  sessionId: { type: String, required: true },
+  paymentId: { type: String, required: true },
   status: {
     type: String,
     enum: ["Pending", "Confirmed", "In Progress", "Completed"],
@@ -29,33 +27,37 @@ const orderSchema = new mongoose.Schema({
   },
   message: {
     type: String,
-    default: "", // Optional, but you can set default to empty string
+    default: "",
   },
   createdAt: { type: Date, default: Date.now },
   expiresAt: {
     type: Date,
-    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from creation
+    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day later
+  },
+  isExpired: {
+    type: Boolean,
+    default: false,
   },
 });
 
-// Set TTL index on expiresAt field
-orderSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+// ❌ Removed TTL index
+// ✅ Add a regular index if needed for querying (optional)
+orderSchema.index({ expiresAt: 1 });
 
-// Create a pre-save hook to validate menu items
 orderSchema.pre("save", async function (next) {
   const dishPromises = this.dishes.map(async (dish) => {
     const menuItem = await Menu.findById(dish.menuItem);
     if (!menuItem) {
       throw new Error(`Menu item with id ${dish.menuItem} does not exist`);
     }
-    return dish; // Return the dish if valid
+    return dish;
   });
 
   try {
     await Promise.all(dishPromises);
-    next(); // Proceed if all menu items are valid
+    next();
   } catch (error) {
-    next(error); // Pass error to next middleware
+    next(error);
   }
 });
 
