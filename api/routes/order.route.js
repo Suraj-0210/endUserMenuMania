@@ -363,7 +363,7 @@ router.get("/checkout/:sessionId", async (req, res) => {
 router.get("/cron/mark-expired-orders", async (req, res) => {
   try {
     const result = await Order.updateMany(
-      { isExpired: false, expiresAt: { $lt: new Date() } },
+      { isExpired: false },
       { $set: { isExpired: true } }
     );
     res.json({ success: true, updated: result.modifiedCount });
