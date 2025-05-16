@@ -247,13 +247,13 @@ router.get("/orders/:sessionid", async (req, res) => {
 // Update Order Status by Owners
 router.put("/orders/:orderId/status", async (req, res) => {
   const { orderId } = req.params;
-  const { status } = req.body; // New status should be sent in the request body
+  const { status, rejectReason } = req.body; // New status should be sent in the request body
 
   try {
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
-      { status },
-      { new: true } // Return the updated document
+      { status, rejectionReason: rejectReason },
+      { new: true }
     );
 
     if (!updatedOrder) {

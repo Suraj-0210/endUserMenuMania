@@ -22,8 +22,12 @@ const orderSchema = new mongoose.Schema({
   paymentId: { type: String, required: true },
   status: {
     type: String,
-    enum: ["Pending", "Confirmed", "In Progress", "Completed"],
+    enum: ["Pending", "Confirmed", "In Progress", "Completed", "Rejected"],
     default: "Pending",
+  },
+  rejectionReason: {
+    type: String, // ✅ New field
+    default: "",
   },
   message: {
     type: String,
