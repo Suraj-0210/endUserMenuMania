@@ -330,7 +330,7 @@ router.get("/checkout/:sessionId", async (req, res) => {
         };
       });
 
-      if (order.status === "Delivered") {
+      if (order.status === "Delivered" || order.status === "Rejected") {
         totalAmount += orderAmount;
         if (order.paymentId !== "Pay_After_Service") {
           paidOnline += orderAmount;
