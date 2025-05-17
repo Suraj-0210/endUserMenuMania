@@ -330,11 +330,12 @@ router.get("/checkout/:sessionId", async (req, res) => {
         };
       });
 
-      if (order.status === "Delivered" || order.status === "Rejected") {
+      if (
+        (order.status === "Delivered" || order.status === "Rejected") &&
+        order.paymentId !== "Pay_After_Service"
+      ) {
         totalAmount += orderAmount;
-        if (order.paymentId !== "Pay_After_Service") {
-          paidOnline += orderAmount;
-        }
+        paidOnline += orderAmount;
       }
 
       if (
