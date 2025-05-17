@@ -330,13 +330,17 @@ router.get("/checkout/:sessionId", async (req, res) => {
         };
       });
 
-      totalAmount += orderAmount;
-
-      if (order.paymentId !== "Pay_After_Service") {
-        paidOnline += orderAmount;
+      if (order.status === "Delivered") {
+        totalAmount += orderAmount;
+        if (order.paymentId !== "Pay_After_Service") {
+          paidOnline += orderAmount;
+        }
       }
 
-      if (order.status === "Rejected") {
+      if (
+        order.status === "Rejected" &&
+        order.paymentId !== "Pay_After_Service"
+      ) {
         refundAmount += orderAmount; // 👈 Add rejected order amount
       }
 
