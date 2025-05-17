@@ -311,6 +311,7 @@ router.get("/checkout/:sessionId", async (req, res) => {
 
     let totalAmount = 0;
     let paidOnline = 0;
+    let refundAmount = 0; // 👈 Initialize refund amount
 
     const formattedOrders = orders.map((order) => {
       let orderAmount = 0;
@@ -318,13 +319,14 @@ router.get("/checkout/:sessionId", async (req, res) => {
       const items = order.dishes.map((dish) => {
         const price = dish.menuItem.price;
         const quantity = dish.quantity;
-        orderAmount += price * quantity;
+        const total = price * quantity;
+        orderAmount += total;
 
         return {
           Name: dish.menuItem.name,
           Quantity: quantity,
           Price: price,
-          Total: price * quantity,
+          Total: total,
         };
       });
 
@@ -334,12 +336,16 @@ router.get("/checkout/:sessionId", async (req, res) => {
         paidOnline += orderAmount;
       }
 
+      if (order.status === "Rejected") {
+        refundAmount += orderAmount; // 👈 Add rejected order amount
+      }
+
       return {
         OrderId: order._id,
         Items: items,
         PaymentId: order.paymentId,
         Status: order.status,
-        orderDateTime: order.createdAt, // 👈 Added this line
+        orderDateTime: order.createdAt,
       };
     });
 
@@ -351,6 +357,7 @@ router.get("/checkout/:sessionId", async (req, res) => {
       totalAmount,
       paidOnline,
       remainingAmount: totalAmount - paidOnline,
+      refundAmount, // 👈 Include in response
       orders: formattedOrders,
     });
   } catch (error) {
