@@ -330,22 +330,18 @@ router.get("/checkout/:sessionId", async (req, res) => {
         };
       });
 
+      const isOnlinePayment = order.paymentId !== "Pay_After_Service";
+
       if (order.status === "Delivered") {
-        totalAmount += orderAmount; // Add all delivered orders, paid in any way
+        totalAmount += orderAmount;
+
+        if (isOnlinePayment) {
+          paidOnline += orderAmount;
+        }
       }
 
-      if (
-        (order.status === "Delivered" || order.status === "Rejected") &&
-        order.paymentId !== "Pay_After_Service"
-      ) {
-        paidOnline += orderAmount; // Add only if paid online
-      }
-
-      if (
-        order.status === "Rejected" &&
-        order.paymentId !== "Pay_After_Service"
-      ) {
-        refundAmount += orderAmount; // 👈 Add rejected order amount
+      if (order.status === "Rejected" && isOnlinePayment) {
+        refundAmount += orderAmount;
       }
 
       return {
@@ -365,7 +361,7 @@ router.get("/checkout/:sessionId", async (req, res) => {
       totalAmount,
       paidOnline,
       remainingAmount: totalAmount - paidOnline,
-      refundAmount, // 👈 Include in response
+      refundAmount,
       orders: formattedOrders,
     });
   } catch (error) {
