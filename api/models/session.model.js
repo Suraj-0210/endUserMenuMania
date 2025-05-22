@@ -15,10 +15,13 @@ const sessionSchema = new mongoose.Schema({
     ref: "Restaurant",
     required: true,
   },
+  isExpired: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 5400, // 1.5 hours = 90 minutes = 5400 seconds
   },
 });
 

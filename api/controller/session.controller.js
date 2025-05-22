@@ -46,15 +46,24 @@ export const expireSession = async (req, res) => {
   }
 
   try {
-    const session = await Session.findOneAndDelete({ sessionId });
+    // Mark session as expired instead of deleting
+    const session = await Session.findOneAndUpdate(
+      { sessionId },
+      { isExpired: true },
+      { new: true } // return the updated document
+    );
 
     if (!session) {
       return res.status(404).json({ message: "Session not found" });
     }
 
+    // Broadcast updated table status if needed
     await broadcastTableStatus(session.restaurantId);
+
+    // Clear session cookie from client
     res.clearCookie("sessionId");
-    res.status(200).json({ message: "Session expired successfully" });
+
+    res.status(200).json({ message: "Session expired successfully", session });
   } catch (error) {
     console.error("Error expiring session:", error);
     res.status(500).json({ message: "Failed to expire session" });
