@@ -18,6 +18,7 @@ const sessionSchema = new mongoose.Schema({
   isExpired: {
     type: Boolean,
     default: false,
+    index: true,
   },
   createdAt: {
     type: Date,
